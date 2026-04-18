@@ -60,6 +60,7 @@
 - Register in `vercel.json` with `schedule: "0 4 * * *"` (daily at 04:00 UTC).
 
 ### 3.9 — README
+
 - Write a project `README.md` covering: what it does, tech stack, local setup (Neon, `.env.local`, `pnpm install`, `pnpm db:push`, `pnpm dev`), deployment link, a screenshot.
 
 ## Done when

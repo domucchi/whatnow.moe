@@ -9,6 +9,7 @@
 ## Steps
 
 ### 2.0 — Design implementation pass
+
 - Review the supplied design and map each element to existing components (`username-list-form`, `anime-card`, `match-section`, `loading.tsx`, `error.tsx`).
 - Create `docs/design-mapping.md` noting any new shared components, spacing/typography tokens, and shadcn overrides needed.
 - Update `src/app/globals.css` / Tailwind theme tokens to match the design palette (still dark-only).

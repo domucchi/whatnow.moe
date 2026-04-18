@@ -103,9 +103,11 @@ Keep these thin — they import from the feature.
   - Default → generic fallback.
 
 ### 1.7 — `next.config.ts`
+
 - `images.remotePatterns` for `s4.anilist.co` and `img.anili.st`.
 
 ### 1.8 — Test plumbing
+
 - Install: `pnpm add -D vitest @vitest/ui`.
 - Create `vitest.config.ts` with the `@/*` path alias mirrored from `tsconfig.json` (via `vite-tsconfig-paths`).
 - Scripts: `"test": "vitest run"`, `"test:watch": "vitest"`.

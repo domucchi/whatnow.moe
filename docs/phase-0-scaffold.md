@@ -11,30 +11,36 @@
 ## Steps
 
 ### 0.1 — Create Next.js project
+
 - Run `pnpm create next-app@latest .` inside the anilist-match folder.
 - Answers: TypeScript ✓, ESLint ✓, Tailwind ✓, **`src/` dir ✓** (bulletproof-react requires this), App Router ✓, import alias `@/*` → `./src/*`, Turbopack ✓.
 - Verify `pnpm dev` boots.
 
 ### 0.2 — Install core dependencies
+
 ```
 pnpm add drizzle-orm @neondatabase/serverless zod nuqs
 pnpm add -D drizzle-kit @types/node
 ```
 
 ### 0.3 — Initialize shadcn/ui
+
 - Run `pnpm dlx shadcn@latest init`. Pick Default style, Neutral base color, CSS variables, components path `@/components/ui`.
 - Add primitives: `button input label skeleton sheet badge dropdown-menu checkbox slider`.
 - Commit the generated `src/components/ui/` files.
 
 ### 0.4 — TypeScript strict mode
+
 - In `tsconfig.json` under `compilerOptions`, ensure: `"strict": true`, `"noUncheckedIndexedAccess": true`, `"noImplicitOverride": true`, `"noFallthroughCasesInSwitch": true`.
 - Confirm the path alias: `"paths": { "@/*": ["./src/*"] }`.
 - Run `pnpm tsc --noEmit` — clean.
 
 ### 0.5 — Prettier
+
 ```
 pnpm add -D prettier prettier-plugin-tailwindcss
 ```
+
 - `.prettierrc`:
   ```json
   {
@@ -51,10 +57,13 @@ pnpm add -D prettier prettier-plugin-tailwindcss
 - Add script: `"format": "prettier --write ."` and `"format:check": "prettier --check ."`.
 
 ### 0.6 — ESLint with bulletproof-react rules
+
 Extend the Next default config to enforce our architecture.
+
 ```
 pnpm add -D eslint-plugin-check-file eslint-plugin-import eslint-config-prettier
 ```
+
 - `eslint.config.mjs` should include:
   - **Unidirectional imports** via `import/no-restricted-paths`:
     - `src/features/*` cannot import from `src/app/*`
@@ -68,10 +77,12 @@ pnpm add -D eslint-plugin-check-file eslint-plugin-import eslint-config-prettier
 - Run `pnpm lint` — clean.
 
 ### 0.7 — Husky + lint-staged pre-commit gate
+
 ```
 pnpm add -D husky lint-staged
 pnpm dlx husky init
 ```
+
 - `.husky/pre-commit`: `pnpm lint-staged` (one line).
 - `package.json` `"lint-staged"`:
   ```json
@@ -83,6 +94,7 @@ pnpm dlx husky init
 - Add a separate pre-push hook `.husky/pre-push` that runs `pnpm typecheck && pnpm test` so commits stay fast but broken code can't be pushed.
 
 ### 0.8 — Env var validation (`src/config/env.ts`)
+
 - Install: already have `zod`.
 - Create `src/config/env.ts`:
   - Zod schema for `DATABASE_URL` (URL), `ANILIST_USER_AGENT` (non-empty string), `NODE_ENV` (enum).
@@ -92,6 +104,7 @@ pnpm dlx husky init
 - Use `@t3-oss/env-nextjs` as an alternative if you want client/server split validation — optional.
 
 ### 0.9 — Create Neon project
+
 - Create a new Neon project via dashboard or CLI.
 - Grab the pooled connection string.
 - Write `.env.local`:
@@ -102,6 +115,7 @@ pnpm dlx husky init
 - Confirm `.env.local` is in `.gitignore` (Next default).
 
 ### 0.10 — Wire up Drizzle
+
 - `drizzle.config.ts`: driver `neon-http`, schema at `./src/lib/db/schema.ts`, out at `./drizzle`.
 - `src/lib/db/index.ts`: Drizzle client using `@neondatabase/serverless` + `env.DATABASE_URL` from `@/config/env`.
 - `src/lib/db/schema.ts` with the three tables (`users`, `anime`, `user_planning_entries`) + indexes on `user_planning_entries.anime_id` and `anime.mal_id`. Use `citext` for `users.username`. Include `users.provider` (default `'anilist'`) and `anime.mal_id` (nullable) from day 1 — see [future-multi-provider.md](./future-multi-provider.md).
@@ -109,12 +123,14 @@ pnpm dlx husky init
 - Run `pnpm drizzle-kit generate` then `pnpm drizzle-kit push`. Verify tables in Neon console.
 
 ### 0.11 — Dark theme (hardcoded)
+
 - In `src/app/layout.tsx`, add `className="dark"` permanently to `<html>`.
 - Keep `darkMode: 'class'` in `tailwind.config.ts`.
 - Customize `.dark` tokens in `src/app/globals.css` or accept shadcn defaults.
 - Replace default `page.tsx` with a placeholder `<h1>anilist-match</h1>` — real UI in Phase 1.
 
 ### 0.12 — Package scripts & sanity check
+
 - `package.json` scripts:
   ```json
   {
@@ -136,6 +152,7 @@ pnpm dlx husky init
 - Run `pnpm db:studio` → the three empty tables are visible.
 
 ### 0.13 — Initial commit
+
 - Commit everything as `chore: scaffold project with bulletproof-react tooling`. First commit should include Husky + lint-staged so every future commit runs through them.
 
 ## Done when

@@ -159,6 +159,7 @@ index anime (mal_id)
 ```
 
 **Cache rules:**
+
 - Fresh if `last_fetched_at` < 1 hour → serve from DB
 - Stale (1h–24h) → serve from DB, background-refresh
 - Older than 24h or missing → fetch synchronously, upsert, serve
