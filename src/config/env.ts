@@ -15,7 +15,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid postgres connection string'),
   ANILIST_USER_AGENT: z
     .string()
-    .min(1, 'ANILIST_USER_AGENT must be set (e.g. "anilist-match (https://github.com/…)")'),
+    .min(1, 'ANILIST_USER_AGENT must be set (e.g. "whatnow.moe (https://github.com/…)")'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 

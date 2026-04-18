@@ -13,7 +13,9 @@ import {
 
 /**
  * Case-insensitive text via Postgres's `citext` extension.
- * The extension itself is created in `drizzle/0000_enable_citext.sql`.
+ * The extension is enabled by the initial migration (`drizzle/0000_*.sql`).
+ * On a fresh database, run `pnpm db:migrate` — `db:push` bypasses migration
+ * files and will fail on the `citext` column type until the extension exists.
  */
 const citext = customType<{ data: string; driverData: string }>({
   dataType: () => 'citext',

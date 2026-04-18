@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'anilist-match',
+  title: 'whatnow.moe',
   description: 'Find anime you and your friends all want to watch',
 };
 
