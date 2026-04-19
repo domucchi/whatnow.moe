@@ -7,10 +7,6 @@ type Props = {
   anime: AnimeWithMatchInfo;
 };
 
-/**
- * One anime tile in the results grid. RSC — no interactivity, server-rendered.
- * Styling is intentionally minimal; the design pass in Phase 2 replaces this.
- */
 export function AnimeCard({ anime }: Props) {
   const title = anime.titleEnglish ?? anime.titleRomaji ?? 'Unknown title';
   const href = anime.siteUrl ?? `https://anilist.co/anime/${anime.id}`;

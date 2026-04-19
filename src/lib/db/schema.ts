@@ -11,21 +11,12 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
-/**
- * Case-insensitive text via Postgres's `citext` extension.
- * The extension is enabled by the initial migration (`drizzle/0000_*.sql`).
- * On a fresh database, run `pnpm db:migrate` — `db:push` bypasses migration
- * files and will fail on the `citext` column type until the extension exists.
- */
+// `citext` extension is enabled in `drizzle/0000_*.sql`. On a fresh DB use
+// `pnpm db:migrate` — `db:push` skips migration files and fails on this type.
 const citext = customType<{ data: string; driverData: string }>({
   dataType: () => 'citext',
 });
 
-/**
- * Tracked AniList / MyAnimeList users whose planning lists we've fetched.
- * `provider` is forward-compatible with the planned MAL addition — see
- * `docs/future-multi-provider.md`. Phase 1 only writes `'anilist'`.
- */
 export const users = pgTable(
   'users',
   {
@@ -39,11 +30,8 @@ export const users = pgTable(
   (table) => [uniqueIndex('users_provider_username_unique').on(table.provider, table.username)],
 );
 
-/**
- * Anime metadata. Canonical `id` is AniList's media id. `malId` is captured
- * from AniList's `idMal` field so we can later join against a MAL-sourced list
- * without a second AniList lookup.
- */
+// `id` is AniList's media id; `malId` mirrors AniList's `idMal` so a MAL list
+// can join without a second AniList lookup.
 export const anime = pgTable(
   'anime',
   {
@@ -69,10 +57,7 @@ export const anime = pgTable(
   (table) => [index('anime_mal_id_idx').on(table.malId)],
 );
 
-/**
- * Many-to-many: each row means "user X has anime Y in their PLANNING list".
- * Indexed on anime_id so the match query's GROUP BY scales.
- */
+// `anime_id` index exists because the match query's GROUP BY hits it hot.
 export const userPlanningEntries = pgTable(
   'user_planning_entries',
   {

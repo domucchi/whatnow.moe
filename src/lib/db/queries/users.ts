@@ -10,12 +10,8 @@ export type UserMeta = {
   notFound: boolean;
 };
 
-/**
- * Insert-or-update a user by `(provider, username)`. Returns the row id.
- *
- * Side effects on conflict: `last_fetched_at` is touched and `not_found` is
- * cleared (a user who existed once must not keep the 404-cache sticky).
- */
+// On conflict we always clear `not_found` — a user who exists now must not
+// keep a stale 404 cache from a previous lookup.
 export async function upsertUser(
   provider: ListProvider,
   username: string,
@@ -47,10 +43,6 @@ export async function upsertUser(
   return row.id;
 }
 
-/**
- * Mark a username as not-found so the cache can short-circuit future lookups
- * for a few minutes without hitting AniList again.
- */
 export async function markUserNotFound(provider: ListProvider, username: string): Promise<void> {
   await db
     .insert(users)
@@ -69,9 +61,6 @@ export async function markUserNotFound(provider: ListProvider, username: string)
     });
 }
 
-/**
- * Look up cache metadata for a user. Returns null if we've never seen them.
- */
 export async function getUserMeta(
   provider: ListProvider,
   username: string,

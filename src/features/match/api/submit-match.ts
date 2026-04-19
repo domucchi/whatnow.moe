@@ -4,13 +4,8 @@ import { redirect } from 'next/navigation';
 
 import { MatchRequestSchema } from '@/features/match/validation/match-request';
 
-/**
- * Shape returned to `useActionState` on the client.
- *
- * On success we `redirect(...)` which throws a special marker Next intercepts,
- * so callers never read the success branch — but the type still needs to be
- * settled so useActionState's initialState type lines up.
- */
+// Success path calls `redirect()` (which throws a Next-internal marker), so
+// only the error shape is ever observed by the client.
 export type SubmitMatchState = {
   errors?: {
     formErrors?: string[];
@@ -22,8 +17,8 @@ export async function submitMatch(
   _prev: SubmitMatchState,
   formData: FormData,
 ): Promise<SubmitMatchState> {
-  // The form submits fields named `username-0`, `username-1`, ... so we can
-  // preserve row order and surface per-row errors back to the client.
+  // Per-row keys (`username-0`, `username-1`, …) preserve order so we can map
+  // validation errors back to the right input.
   const usernames: string[] = [];
   for (const [key, value] of formData.entries()) {
     if (key.startsWith('username-') && typeof value === 'string' && value.trim() !== '') {
@@ -38,6 +33,5 @@ export async function submitMatch(
 
   console.log('parsed', parsed);
 
-  // Route-aware redirect. `parsed.data.usernames` is already deduped + lowered.
   redirect(`/match/${parsed.data.usernames.join('/')}`);
 }

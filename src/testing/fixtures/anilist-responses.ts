@@ -1,11 +1,7 @@
 import type { PlanningListResponse } from '@/lib/anilist/schemas';
 
-/**
- * Static fixtures used by unit tests so we never need a live AniList call.
- * Keep them minimal but representative — real AniList responses frequently
- * include `null` titles/scores, so we mirror that.
- */
-
+// Real AniList responses often include null titles/scores; fixtures mirror
+// that so tests catch nullability bugs.
 const cowboyBebop = {
   id: 1,
   idMal: 1,

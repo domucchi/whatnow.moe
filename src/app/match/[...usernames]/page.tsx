@@ -13,9 +13,8 @@ type Props = {
 export default async function MatchPage({ params }: Props) {
   const { usernames: rawSegments } = await params;
 
-  // The catch-all route can yield 1..n segments. Anything outside 2–10 is
-  // not a request we know how to satisfy — show 404 rather than a confusing
-  // empty result.
+  // 404 outside the 2–10 range so the catch-all doesn't render an empty page
+  // for malformed URLs.
   if (rawSegments.length < 2 || rawSegments.length > 10) {
     notFound();
   }

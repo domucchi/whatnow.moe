@@ -1,10 +1,7 @@
 import type { AnimeWithMatchInfo, MatchGroup } from '@/features/match/types';
 
-/**
- * Collapse flat match rows into sections keyed by `matchCount`, ordered from
- * most-matched to least. The SQL already returns rows sorted within each
- * count, so we only need to bucket — not re-sort inside a group.
- */
+// Rows arrive already sorted within each match-count group (see `getMatches`),
+// so this only buckets by count and orders the buckets — no inner re-sort.
 export function groupByMatchCount(rows: AnimeWithMatchInfo[]): MatchGroup[] {
   const byCount = new Map<number, AnimeWithMatchInfo[]>();
 

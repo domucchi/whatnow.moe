@@ -1,14 +1,5 @@
-/**
- * Typed errors raised by the AniList client layer.
- *
- * Every error accepts a `provider` argument so the UI layer can say
- * "User X not found on AniList" (vs MAL, once that ships). Phase 1 always
- * passes `'anilist'`.
- *
- * The `name` discriminator is set via class field so `error.name ===
- * 'UserNotFoundError'` works even after serialization across the RSC boundary.
- */
-
+// `name` is set via class field (not the constructor) so it survives the RSC
+// serialization boundary — class identity does not, but the string `name` does.
 export type ListProvider = 'anilist' | 'mal';
 
 export class UserNotFoundError extends Error {
@@ -58,11 +49,7 @@ export class ProviderSchemaError extends Error {
   }
 }
 
-/**
- * Narrow check used by `error.tsx` without relying on `instanceof` (which
- * breaks across the RSC serialization boundary — classes on the client are
- * not the same identity as classes on the server).
- */
+// `instanceof` is unreliable across the RSC boundary, so check `name` instead.
 export function isKnownProviderError(
   error: unknown,
 ): error is UserNotFoundError | RateLimitError | ProviderDownError | ProviderSchemaError {

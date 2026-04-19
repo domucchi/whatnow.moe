@@ -1,13 +1,7 @@
 import { z } from 'zod';
 
-/**
- * Zod schemas mirroring the AniList GraphQL response shape.
- *
- * Enum-ish fields (`format`, `status`) are left as strings because AniList
- * occasionally adds new values and we don't want a parse failure the day
- * they do. The DB columns are `text`, so any string round-trips fine.
- */
-
+// `format` / `status` stay as strings (not enums) so a new AniList value
+// doesn't cause a parse failure the day it ships; DB columns are `text`.
 export const AnilistMediaSchema = z.object({
   id: z.number().int(),
   idMal: z.number().int().nullable(),
@@ -43,7 +37,7 @@ export const MediaListCollectionSchema = z
       }),
     ),
   })
-  .nullable(); // AniList returns `null` when the user does not exist.
+  .nullable(); // AniList returns null here when the user doesn't exist.
 
 export const PlanningListResponseSchema = z.object({
   data: z.object({
@@ -52,11 +46,6 @@ export const PlanningListResponseSchema = z.object({
 });
 export type PlanningListResponse = z.infer<typeof PlanningListResponseSchema>;
 
-/**
- * AniList's standard error envelope, shaped like `{ errors: [{ message, ... }] }`.
- * We don't currently branch on it but it's nice to parse so we can surface the
- * message in logs.
- */
 export const AnilistErrorResponseSchema = z.object({
   errors: z.array(
     z.object({

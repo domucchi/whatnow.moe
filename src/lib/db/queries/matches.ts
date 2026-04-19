@@ -24,15 +24,9 @@ export type MatchRow = {
 
 export type GetMatchesOptions = {
   usernames: string[];
-  /** When true (default), restrict to already-finished anime. */
   onlyFinished?: boolean;
 };
 
-/**
- * Replace this user's PLANNING entries with exactly the given anime ids,
- * atomically. Called after a fresh AniList fetch to keep the cache in sync
- * with the user's actual current list.
- */
 export async function replaceUserPlanningEntries(
   userId: number,
   animeIds: number[],
@@ -46,23 +40,14 @@ export async function replaceUserPlanningEntries(
     return;
   }
 
-  // neon-http has no stateful transactions, but `db.batch` ships the
-  // delete+insert in one HTTP round-trip wrapped in a server-side transaction.
+  // neon-http has no stateful transactions; `db.batch` wraps the
+  // delete+insert in a single server-side transaction.
   await db.batch([
     deleteExisting,
     db.insert(userPlanningEntries).values(animeIds.map((animeId) => ({ userId, animeId }))),
   ]);
 }
 
-/**
- * The heart of the match feature. Returns every anime that appears in at
- * least two of the given users' PLANNING lists, ordered by match count first
- * (so unanimous picks surface at the top) and then by AniList's averageScore /
- * popularity / alphabetical.
- *
- * Phase 2 will extend this with genre/format/year/minScore filters and a
- * variable `ORDER BY`. The parameter list is already shaped for that.
- */
 export async function getMatches(options: GetMatchesOptions): Promise<MatchRow[]> {
   const { usernames, onlyFinished = false } = options;
   if (usernames.length < 2) return [];
@@ -72,8 +57,8 @@ export async function getMatches(options: GetMatchesOptions): Promise<MatchRow[]
     conditions.push(eq(anime.status, 'FINISHED'));
   }
 
-  // Expose a reusable SQL fragment for the distinct-user count so we can use
-  // it in SELECT, HAVING, and ORDER BY without repeating the expression.
+  // Reused in SELECT, HAVING, and ORDER BY — keep as one expression so the
+  // query planner sees them as identical.
   const matchCountExpr = sql<number>`COUNT(DISTINCT ${userPlanningEntries.userId})::int`;
   const matchedUsersExpr = sql<
     string[]

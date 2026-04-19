@@ -5,33 +5,13 @@ import { upsertAnimeBatch, type NewAnimeRow } from '@/lib/db/queries/anime';
 import { replaceUserPlanningEntries } from '@/lib/db/queries/matches';
 import { getUserMeta, markUserNotFound, upsertUser } from '@/lib/db/queries/users';
 
-/**
- * How long a successful fetch counts as "fresh". While fresh the DB is
- * served without touching AniList.
- */
-const FRESH_TTL_MS = 60 * 60 * 1000; // 1 hour
+const FRESH_TTL_MS = 60 * 60 * 1000;
+// Short enough that typos stop hurting once the user fixes them.
+const NOT_FOUND_TTL_MS = 5 * 60 * 1000;
 
-/**
- * How long a 404 (username doesn't exist) is cached before we try AniList
- * again. Short enough that typos don't ruin someone's day once they fix them.
- */
-const NOT_FOUND_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Guarantees `username` has an up-to-date PLANNING list in the DB. On return,
- * the caller can safely query `user_planning_entries`. Throws
- * `UserNotFoundError` when AniList reports the user does not exist.
- *
- * Cache rules:
- * - `not_found` newer than 5 min → throw without hitting AniList.
- * - `last_fetched_at` within 1 h → fresh, return immediately.
- * - Otherwise → fetch synchronously, upsert anime, replace the entries.
- *
- * Stale-while-revalidate (background refresh for 1h–24h old caches) is
- * deliberately deferred — Next's `after()` isn't always safe to call outside
- * a request context (notably tests), and the fresh TTL already bounds
- * AniList traffic to ~1 call/user/hour in the worst case.
- */
+// SWR (background refresh between 1h and 24h) is deliberately deferred:
+// Next's `after()` isn't always safe outside a request context (notably tests),
+// and the fresh TTL already caps AniList traffic at ~1 call/user/hour.
 export async function ensureUserListCached(
   provider: ListProvider,
   username: string,
@@ -54,11 +34,6 @@ export async function ensureUserListCached(
   await refreshUserList(provider, username);
 }
 
-/**
- * Hard refresh: fetch from AniList, upsert anime + user, replace the
- * planning entries for this user. Propagates `UserNotFoundError` when
- * AniList returns `MediaListCollection: null`.
- */
 async function refreshUserList(provider: ListProvider, username: string): Promise<void> {
   const response = await fetchPlanningList(username);
 
@@ -71,8 +46,8 @@ async function refreshUserList(provider: ListProvider, username: string): Promis
     list.entries.map((entry) => entry.media),
   );
 
-  // Dedupe by id — AniList sometimes splits lists (e.g. custom lists) which
-  // can yield the same anime twice.
+  // AniList can return the same anime under multiple lists (custom lists),
+  // so dedupe by id before upserting.
   const uniqueById = new Map<number, AnilistMedia>();
   for (const m of media) uniqueById.set(m.id, m);
   const uniqueMedia = Array.from(uniqueById.values());

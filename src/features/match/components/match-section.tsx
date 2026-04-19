@@ -7,9 +7,6 @@ type Props = {
   totalUsers: number;
 };
 
-/**
- * One "N of M want to watch" section with its anime grid. RSC — all static.
- */
 export function MatchSection({ group, totalUsers }: Props) {
   const header =
     group.matchCount === totalUsers

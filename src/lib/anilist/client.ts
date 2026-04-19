@@ -15,22 +15,9 @@ type AnilistFetchOptions = {
   signal?: AbortSignal;
 };
 
-/**
- * Thin typed wrapper around AniList's single GraphQL endpoint.
- *
- * Responsibilities:
- * - POSTs the query + variables with our User-Agent
- * - Retries 429 (respecting Retry-After when present) and 5xx with backoff
- * - Validates the response via Zod and throws `ProviderSchemaError` on mismatch
- *
- * It deliberately does NOT know about users, the cache, or the DB — those
- * concerns live in `src/lib/cache/list-cache.ts` and above.
- *
- * Note: this module throws `RateLimitError` / `ProviderDownError` / `ProviderSchemaError`.
- * `UserNotFoundError` is raised one layer up (when `MediaListCollection` is null)
- * because "user not found" is a successful GraphQL response from AniList's point
- * of view and only becomes an error at our cache layer.
- */
+// `UserNotFoundError` is raised by the cache layer, not here — AniList returns
+// 200 with `MediaListCollection: null` for missing users, so this layer only
+// throws on transport / rate-limit / schema failures.
 export async function anilistFetch<T>(
   query: string,
   variables: Record<string, unknown>,
@@ -50,8 +37,8 @@ export async function anilistFetch<T>(
       },
       body: JSON.stringify({ query, variables }),
       signal: options.signal,
-      // fetch defaults to no-cache in Next 16 which is what we want —
-      // caching lives in our DB layer, not here.
+      // No explicit cache directive: Next 16's default (no-cache) is what we
+      // want — caching lives in our DB layer.
     });
 
     if (response.status === 429) {
@@ -74,9 +61,8 @@ export async function anilistFetch<T>(
     }
 
     if (!response.ok) {
-      // 4xx other than 429. AniList returns 404 for missing user lists
-      // wrapped as a schema-level null, not an HTTP status — so this is
-      // really just "we did something wrong".
+      // 4xx other than 429 means we sent a bad request — missing users come
+      // back as 200 with a null collection, not as a 404.
       throw new ProviderDownError('anilist', response.status);
     }
 
@@ -89,11 +75,6 @@ export async function anilistFetch<T>(
   }
 }
 
-/**
- * Convenience wrapper for the one query we care about in Phase 1.
- * Returns the raw parsed response; callers handle the null case
- * (= user not found) themselves.
- */
 export async function fetchPlanningList(
   username: string,
   options?: AnilistFetchOptions,

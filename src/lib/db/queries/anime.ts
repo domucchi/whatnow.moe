@@ -5,13 +5,8 @@ import { anime } from '@/lib/db/schema';
 
 export type NewAnimeRow = typeof anime.$inferInsert;
 
-/**
- * Bulk upsert anime metadata. Uses `ON CONFLICT (id) DO UPDATE` so repeated
- * fetches of the same AniList entries refresh scores/popularity/etc.
- *
- * `updated_at` is always set to `now()` on conflict so we can later purge
- * anime that have aged out, via a Vercel cron or similar.
- */
+// `updated_at` is touched on every conflict so a future cron can purge rows
+// that haven't been seen in any user's list for a while.
 export async function upsertAnimeBatch(rows: NewAnimeRow[]): Promise<void> {
   if (rows.length === 0) return;
 

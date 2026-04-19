@@ -7,18 +7,12 @@ import { Button, buttonVariants } from '@/components/ui/button';
 
 type Props = {
   error: Error & { digest?: string };
-  /** Next 16 replaces `reset` with `unstable_retry` in the error boundary API. */
+  // Next 16 renamed `reset` to `unstable_retry` in the error boundary API.
   unstable_retry: () => void;
 };
 
-/**
- * Error UI for the `/match/[...]` route.
- *
- * The `error.name` comes from the typed errors thrown in `src/lib/anilist/errors.ts`.
- * Custom class fields like `provider` / `username` don't reliably cross the RSC
- * serialization boundary (stripped in production), so the user-facing string
- * relies on `error.message`, which does cross.
- */
+// Branch on `error.name` (not `instanceof`) — custom class fields are stripped
+// when typed errors cross the RSC serialization boundary, but `name` survives.
 export default function MatchError({ error, unstable_retry }: Props) {
   useEffect(() => {
     console.error(error);
