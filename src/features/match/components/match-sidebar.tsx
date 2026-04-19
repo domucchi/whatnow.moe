@@ -30,22 +30,45 @@ type Props = {
 export function MatchSidebar({ initialUsernames, started, matches, stats }: Props) {
   const [state, formAction, pending] = useActionState(submitMatch, initialState);
 
-  const [rowIds, setRowIds] = useState<number[]>(() => {
+  // Rows carry a stable id (for React key) + the current input value. Seeded
+  // from the URL-derived `initialUsernames` on mount; the parent re-keys the
+  // sidebar when the URL changes, so a fresh set lands on every match.
+  const [rows, setRows] = useState<{ id: number; value: string }[]>(() => {
     const count = Math.min(MAX_ROWS, Math.max(MIN_ROWS, initialUsernames.length));
-    return Array.from({ length: count }, (_, i) => i);
+    return Array.from({ length: count }, (_, i) => ({
+      id: i,
+      value: initialUsernames[i] ?? '',
+    }));
   });
 
   const addRow = () => {
-    setRowIds((prev) => (prev.length >= MAX_ROWS ? prev : [...prev, Math.max(-1, ...prev) + 1]));
+    setRows((prev) =>
+      prev.length >= MAX_ROWS
+        ? prev
+        : [...prev, { id: Math.max(-1, ...prev.map((r) => r.id)) + 1, value: '' }],
+    );
   };
   const removeRow = (id: number) => {
-    setRowIds((prev) => (prev.length <= MIN_ROWS ? prev : prev.filter((x) => x !== id)));
+    setRows((prev) => (prev.length <= MIN_ROWS ? prev : prev.filter((r) => r.id !== id)));
+  };
+  const setRowValue = (id: number, value: string) => {
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, value } : r)));
   };
 
   const formError = state.errors?.formErrors?.[0];
   const usernameErrors = state.errors?.fieldErrors?.['usernames'];
-  const canAdd = rowIds.length < MAX_ROWS;
-  const canRemove = rowIds.length > MIN_ROWS;
+  const canAdd = rows.length < MAX_ROWS;
+  const canRemove = rows.length > MIN_ROWS;
+
+  // Normalize the same way `submitMatch` does on the server (trim + lowercase
+  // + dedupe), then compare against the initial URL set to decide whether to
+  // show "Match now" instead of "Random pick".
+  const currentNormalized = Array.from(
+    new Set(rows.map((r) => r.value.trim().toLowerCase()).filter(Boolean)),
+  );
+  const initialNormalized = Array.from(new Set(initialUsernames.map((u) => u.toLowerCase())));
+  const isDirty = !arraysEqual(currentNormalized, initialNormalized);
+  const canSubmit = currentNormalized.length >= 2;
 
   // Derived stats for the sidebar display. Avg score + median year come from
   // the *visible* match rows, so they track filter changes.
@@ -61,7 +84,7 @@ export function MatchSidebar({ initialUsernames, started, matches, stats }: Prop
           <section>
             <div className="mb-2.5 flex items-center justify-between">
               <div className="text-[11px] tracking-[0.14em] text-[var(--ink-3)] uppercase">
-                Users · <span className="text-[var(--ink-1)]">{rowIds.length}</span>
+                Users · <span className="text-[var(--ink-1)]">{rows.length}</span>
               </div>
               {canAdd && (
                 <button
@@ -75,14 +98,15 @@ export function MatchSidebar({ initialUsernames, started, matches, stats }: Prop
             </div>
 
             <div className="flex flex-col gap-2">
-              {rowIds.map((id, idx) => (
+              {rows.map((row, idx) => (
                 <UserChip
-                  key={id}
+                  key={row.id}
                   index={idx}
-                  defaultValue={initialUsernames[idx] ?? ''}
+                  value={row.value}
+                  onValueChange={(v) => setRowValue(row.id, v)}
                   canRemove={canRemove}
-                  onRemove={() => removeRow(id)}
-                  loading={pending && !!initialUsernames[idx]}
+                  onRemove={() => removeRow(row.id)}
+                  loading={pending && !!row.value.trim()}
                 />
               ))}
             </div>
@@ -102,7 +126,7 @@ export function MatchSidebar({ initialUsernames, started, matches, stats }: Prop
             )}
           </section>
 
-          {started && <MatchModeToggle userCount={rowIds.length} />}
+          {started && <MatchModeToggle userCount={rows.length} />}
 
           {started && stats && (
             <section className="flex flex-col gap-2.5">
@@ -139,11 +163,30 @@ export function MatchSidebar({ initialUsernames, started, matches, stats }: Prop
               type="submit"
               size="lg"
               className="h-11 w-full"
-              disabled={pending || rowIds.length < MIN_ROWS}
+              disabled={pending || !canSubmit}
             >
               <Sparkles data-icon="inline-start" className="size-4" />
               {pending ? 'Matching…' : 'Find matches'}
             </Button>
+          ) : isDirty ? (
+            <>
+              <Button
+                type="submit"
+                size="lg"
+                className="h-11 w-full"
+                disabled={pending || !canSubmit}
+              >
+                <Sparkles data-icon="inline-start" className="size-4" />
+                {pending ? 'Matching…' : 'Match now'}
+              </Button>
+              <Link
+                href="/"
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-8 w-full')}
+              >
+                <RefreshCw data-icon="inline-start" className="size-3" />
+                Start over
+              </Link>
+            </>
           ) : (
             <>
               <RandomPickButton candidates={matches} usernames={initialUsernames} />
@@ -266,6 +309,17 @@ const USER_COLOR_VARS = [
   '--color-gold',
   '--color-rose',
 ] as const;
+
+// Strict member equality. Both inputs are expected to be already normalized
+// (trimmed / lowercased / deduped) — order-independent comparison via Set
+// would be more forgiving but the server action preserves input order.
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
 
 function computeAvgScore(matches: AnimeWithMatchInfo[]): number | null {
   const scored = matches.filter((m) => m.averageScore !== null);

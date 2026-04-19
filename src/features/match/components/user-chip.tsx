@@ -9,7 +9,8 @@ import { Avatar } from './avatar';
 
 type Props = {
   index: number;
-  defaultValue?: string;
+  value: string;
+  onValueChange: (next: string) => void;
   canRemove: boolean;
   onRemove: () => void;
   autoFocus?: boolean;
@@ -17,13 +18,15 @@ type Props = {
   loading?: boolean;
 };
 
-// Uncontrolled: `defaultValue` seeds the input so the enclosing
-// `<form action={...}>` pipeline still works (FormData picks each row up by
-// `name`). Controlled state would require lifting every keystroke into the
-// parent for no UX win.
+// Controlled so the enclosing sidebar can diff the current edits against the
+// URL-seeded initial set and surface a "Match now" button when they diverge.
+// The `name` attribute is still set so the server action's FormData reader
+// keeps working — React submits the current value regardless of controlled
+// vs uncontrolled.
 export function UserChip({
   index,
-  defaultValue = '',
+  value,
+  onValueChange,
   canRemove,
   onRemove,
   autoFocus = false,
@@ -43,12 +46,13 @@ export function UserChip({
         invalid ? 'border-primary/40' : 'border-[var(--line-soft)]',
       )}
     >
-      <Avatar username={defaultValue || '?'} colorIndex={index} size={26} />
+      <Avatar username={value || '?'} colorIndex={index} size={26} />
       <input
         ref={inputRef}
         id={`username-${index}`}
         name={`username-${index}`}
-        defaultValue={defaultValue}
+        value={value}
+        onChange={(e) => onValueChange(e.target.value)}
         placeholder="AniList username"
         autoComplete="off"
         autoCapitalize="none"
