@@ -1,6 +1,6 @@
 # Phase 1 — Lean MVP
 
-> **Goal:** A user can visit `/`, enter 2–10 AniList usernames, and land on `/match/u1/u2/...` that renders anime common to their PLANNING lists, grouped by match count. Postgres caches AniList responses. Errors are typed and shown clearly.
+> **Goal:** A user can visit `/`, enter 2–10 AniList usernames, and see anime common to their PLANNING lists render below the form on the same page, grouped by match count. The URL becomes `/?u=u1&u=u2&…` so results stay shareable and the form stays visible for easy re-editing. Postgres caches AniList responses. Errors are typed and shown clearly.
 
 > **UI note:** Keep the UI intentionally minimal in this phase — default shadcn styling, plain layouts, no custom design work. Once Phase 1 is functional end-to-end, a real design will be supplied (from Claude Design tool) and implemented at the start of Phase 2.
 
@@ -53,7 +53,9 @@
   - `usernames: z.array(z.string().regex(/^[A-Za-z0-9_]{1,32}$/)).min(2).max(10).transform(dedupe-lowercase)`
   - `onlyFinished: z.boolean().default(true)`
   - Phase 2 fields (genres, formats, yearMin, yearMax, minScore, sort, mode) — declare as `.optional()` now so types are stable.
-  - **URL parsing helper** `parseUsernameSegment(segment): { provider, username }` — split on first `:`; if the left side is a known provider, use it; else treat the whole segment as an `anilist` username. Phase 1 only ever sees non-prefixed segments; this keeps `/match/alice/bob` stable when MAL lands and `/match/mal:alice/bob` becomes valid.
+  - **URL parsing helpers:**
+    - `parseUsernameSegment(segment): { provider, username }` — split on first `:`; if the left side is a known provider, use it; else treat the whole segment as an `anilist` username. Phase 1 only ever sees non-prefixed segments; this keeps `/?u=alice&u=bob` stable when MAL lands and `/?u=mal:alice&u=bob` becomes valid.
+    - `parseUsernamesFromSearchParams(searchParams): UserIdentifier[]` — pulls the `u` param (normalizing single string vs. string array), trims empties, and delegates each value to `parseUsernameSegment`.
 - **`utils/group-by-match-count.ts`** — pure function; takes rows with `match_count` and returns `MatchGroup[]` sorted desc.
 - **`api/get-matches.ts`** — orchestrator, called by the RSC page:
   - Validate + normalize request against `validation/match-request.ts`.
@@ -62,7 +64,7 @@
   - Group via `group-by-match-count` and return `MatchResult`.
 - **`api/submit-match.ts`** — `'use server'` action:
   - Accept `FormData`, parse with Zod, return `{ errors }` on failure.
-  - On success → `redirect('/match/' + usernames.join('/'))`.
+  - On success → build a `URLSearchParams` with one `u` entry per username and `redirect('/?' + qs.toString())`, e.g. `/?u=alice&u=bob`.
 - **Tests (colocated):** `src/features/match/api/get-matches.test.ts` — 2-user, 3-user, 5-user fixtures; user-not-found propagation; tiebreak ordering (score > popularity > title); grouping; `onlyFinished` on/off.
 
 ### 1.5 — Components (`src/features/match/components/`)
@@ -71,9 +73,17 @@ Minimal styling — unstyled beyond shadcn primitive defaults.
 
 - **`username-list-form.tsx`** (`'use client'`):
   - `useActionState` against `@/features/match/api/submit-match`.
-  - Starts with 2 rows; "+ Add user" up to 10; remove row button per row.
+  - Accepts `initialUsernames?: string[]` prop; rows + `defaultValue`s seeded from it so deep links like `/?u=alice&u=bob` land pre-populated. Parent re-keys the component on the URL-derived username set so the uncontrolled inputs remount cleanly on back/forward or shared-link nav.
+  - Starts with 2 rows (clamped to 2–10 based on `initialUsernames.length`); "+ Add user" up to 10; remove row button per row.
   - Per-row inline error from the action's return.
   - Inputs: shadcn `<Input>`. Submit: shadcn `<Button>`.
+- **`match-results.tsx`** (async RSC):
+  - Props: `{ users: UserIdentifier[]; onlyFinished: boolean }`.
+  - `try`/`catch` around `getMatches` — on failure renders `<MatchResultsError>` inline so the form above stays interactive.
+  - Header: "Matches for alice, bob, charlie".
+  - Loop over `MatchResult[]` → render `<MatchSection>` per group; empty-state copy when nothing overlaps.
+- **`match-results-skeleton.tsx`** (RSC): grid skeleton used as the Suspense fallback when `searchParams` change.
+- **`match-results-error.tsx`** (RSC): branches on `error.name` (`UserNotFoundError`, `RateLimitError`, `ProviderDownError`, `ProviderSchemaError`, default) and renders inline title + description. No retry button — the user re-edits the form above.
 - **`match-section.tsx`** (RSC):
   - Props: `{ group: MatchGroup; totalUsers: number }`.
   - Header: "3 of 3 want to watch · 12 anime".
@@ -84,23 +94,14 @@ Minimal styling — unstyled beyond shadcn primitive defaults.
 
 ### 1.6 — Route entries (`src/app/`)
 
-Keep these thin — they import from the feature.
+Keep these thin — they import from the feature. There is only one results-capable route.
 
-- **`src/app/page.tsx`**:
-  - Server component. Renders `<h1>` + tagline + `<UsernameListForm />` from `@/features/match/components/username-list-form`.
-- **`src/app/match/[...usernames]/page.tsx`** (RSC):
-  - `const { usernames } = await params;`
-  - Map each segment through `parseUsernameSegment` (returns `{ provider: 'anilist', username }` for all Phase 1 URLs).
-  - Call `getMatches({ users, onlyFinished: true })` from `@/features/match/api/get-matches` where `users: { provider, username }[]`.
-  - Render header ("Matches for alice, bob, charlie" + "Edit users" link to `/`).
-  - Loop over `MatchResult[]` → render `<MatchSection>` per group.
-  - Empty state: centered text, no illustration.
-- **`src/app/match/[...usernames]/loading.tsx`** — skeleton grid using shadcn `<Skeleton>`.
-- **`src/app/match/[...usernames]/error.tsx`** (`'use client'`) — switches on `error.name`, reading `error.provider` and `error.username` when set:
-  - `UserNotFoundError` → "User `X` not found on AniList."
-  - `RateLimitError` → "AniList is rate-limiting us — try in a minute."
-  - `ProviderDownError` → "Something went wrong fetching from AniList."
-  - Default → generic fallback.
+- **`src/app/page.tsx`** (async RSC):
+  - Accept `searchParams: Promise<Record<string, string | string[] | undefined>>`.
+  - `const users = parseUsernamesFromSearchParams(await searchParams)`.
+  - Render `<h1>` + tagline + `<UsernameListForm initialUsernames={users.map(u => u.username)} />` (keyed on the URL-derived username set so it remounts on nav).
+  - When `users.length >= 2`, render a `<Suspense key={usersKey} fallback={<MatchResultsSkeleton />}>` wrapping `<MatchResults users={users} onlyFinished />`.
+  - No separate home vs. results route — the form is always visible and results stream in below when params are present. Errors surface inline via `<MatchResultsError>` inside `<MatchResults>`; no route-level `error.tsx` / `loading.tsx` files needed.
 
 ### 1.7 — `next.config.ts`
 
@@ -115,11 +116,13 @@ Keep these thin — they import from the feature.
 
 ## Done when
 
-- `/` renders the form (2 rows + add/remove).
-- Submitting 2 real usernames redirects to `/match/u1/u2` and shows grouped results from a cold cache (~2 AniList fetches).
+- `/` renders the form (2 rows + add/remove), no results section below.
+- Submitting 2 real usernames updates the URL to `/?u=u1&u=u2` and renders grouped results below the form from a cold cache (~2 AniList fetches). Form stays visible the whole time.
+- Editing a username in the form and resubmitting updates the URL and re-renders results in place — no "back" navigation needed.
+- Visiting `/?u=u1&u=u2` directly pre-populates the form with those usernames and renders results below.
 - Reloading within 1h shows results with zero AniList fetches (verify via server log / Neon query log).
 - Submitting an invalid username shows the inline Zod error without hitting the server.
-- Submitting a nonexistent user shows "User `xyz` not found" via `error.tsx`.
+- Submitting a nonexistent user shows "User `xyz` not found" inline beneath the form while the form stays editable.
 - 3+ users show correctly grouped sections.
 - `pnpm test` passes matching + schema + cache unit tests.
 - `pnpm lint && pnpm typecheck` stay clean (bulletproof import rules didn't flag anything).

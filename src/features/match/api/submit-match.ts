@@ -31,5 +31,7 @@ export async function submitMatch(
     return { errors: parsed.error.flatten() };
   }
 
-  redirect(`/match/${parsed.data.usernames.join('/')}`);
+  const qs = new URLSearchParams();
+  for (const u of parsed.data.usernames) qs.append('u', u);
+  redirect(`/?${qs.toString()}`);
 }

@@ -17,7 +17,8 @@
 - Set up MSW handlers in `src/testing/mocks/anilist-handlers.ts` that intercept `https://graphql.anilist.co` and return fixtures from `src/testing/fixtures/` for 2–3 test usernames.
 - `tests/e2e/match.spec.ts` (top-level `tests/e2e/` — not under `src/` since Playwright runs outside the app):
   - Navigate to `/`, fill form with two fixture usernames, submit.
-  - Assert redirect to `/match/alice/bob`.
+  - Assert the URL becomes `/?u=alice&u=bob` and results render in place (no separate route).
+  - Assert the form stays visible at the top and can be edited without navigating away.
   - Assert grouped sections render with expected counts.
   - Assert clicking "Random pick" scrolls a card into view.
 
@@ -29,8 +30,8 @@
 
 ### 3.4 — OG images for shareable URLs
 
-- Add `src/app/match/[...usernames]/opengraph-image.tsx` using Next.js's `ImageResponse`.
-- Render a simple card: "matches for `alice` · `bob` · `charlie`" + site name. No DB call needed (static generation from params).
+- Add `src/app/opengraph-image.tsx` using Next.js's `ImageResponse`.
+- Ideal: read `searchParams` and render "matches for `alice` · `bob` · `charlie`" + site name. If Next doesn't expose `searchParams` to `opengraph-image.tsx` in the current version, fall back to a generic site-wide OG ("whatnow.moe — find anime you and your friends all want to watch") and accept that per-match previews are lost. Call this out as a trade-off of the single-page design, not a blocker.
 - Verify preview on `https://www.opengraph.xyz/` or equivalent.
 
 ### 3.5 — Performance polish
@@ -38,7 +39,7 @@
 - Verify `next/image` is used for all AniList covers with `remotePatterns` in `next.config.ts`.
 - Add `priority` to the first row of the results grid.
 - Audit bundle with `pnpm build` — keep route bundles under 150 KB gzipped.
-- Confirm `/match/[...]` is rendered on-demand (dynamic RSC) — not attempted at build.
+- Confirm `/` is rendered on-demand (dynamic RSC) whenever `searchParams` are present — not attempted at build.
 
 ### 3.6 — Migrations & production DB
 
@@ -70,7 +71,7 @@ The Vercel Git integration is intentionally NOT connected — Vercel's default a
 
 - All unit + Playwright tests pass in CI (GitHub Actions gates every Vercel deploy).
 - Axe accessibility scan is clean on home and results pages.
-- Shared `/match/...` URL renders a nice OG preview in a chat app.
+- Shared `/?u=...` URL renders a nice OG preview in a chat app (or, if `searchParams` aren't available to `opengraph-image.tsx`, the generic site OG is good enough).
 - Production URL on Vercel serves the app; Neon prod DB is populated via first real requests.
 - README exists with local-setup steps.
 - `pnpm lint && pnpm typecheck && pnpm test` are all clean — bulletproof-react import rules still hold with all Phase 2 + 3 additions.

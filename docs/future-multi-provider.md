@@ -28,10 +28,10 @@ This means **we add `mal_id` to the `anime` table from day 1**, populated from A
 1. **Users table gets a `provider` column** (`anilist` | `mal`), default `'anilist'`. Unique constraint becomes `(provider, username)` instead of `username`. Rename the table from `anilist_users` to just `users`. One-time annoyance now; a real migration later if skipped.
 2. **`anime.mal_id` column** (nullable, indexed) — populated from AniList's `idMal` on every list fetch.
 3. **Error classes take a `provider` argument** — `UserNotFoundError(provider, username)`. Phase 1 always passes `"anilist"`, but the shape is ready.
-4. **URL schema allows an optional `provider:` prefix**:
-   - `/match/alice/bob` → both anilist (default, current state).
-   - `/match/anilist:alice/mal:bob` → mixed providers (future).
-   - Parser rule: split each segment on first `:`; if left side is a known provider, use it, else treat the whole segment as an anilist username.
+4. **URL schema allows an optional `provider:` prefix on each `u` query param**:
+   - `/?u=alice&u=bob` → both anilist (default, current state).
+   - `/?u=anilist:alice&u=mal:bob` → mixed providers (future).
+   - Parser rule: for each `u` value, split on first `:`; if left side is a known provider, use it, else treat the whole value as an anilist username.
    - **Guarantees:** every Phase 1 URL stays valid after MAL lands. No broken shares.
 5. **Matching SQL already joins through `user_planning_entries` on user id**, not username — so no SQL change needed when users gain providers.
 
@@ -48,7 +48,7 @@ This means **we add `mal_id` to the `anime` table from day 1**, populated from A
 1. Rename `src/lib/anilist/` → `src/lib/providers/anilist/`. Add `src/lib/providers/provider-contract.ts` with the interface.
 2. Build `src/lib/providers/mal/` — client, queries (well, REST calls), schemas, errors. Same shape as AniList provider.
 3. Update `ensureUserListCached` to dispatch on `provider`.
-4. Add provider parsing to `src/app/match/[...usernames]/page.tsx` and the Zod schema.
+4. Add provider parsing to `src/app/page.tsx` (via the existing `parseUsernamesFromSearchParams` helper, which already delegates to `parseUsernameSegment`) and the Zod schema.
 5. Update `UsernameListForm` to include per-row provider select.
 6. Migration: backfill `provider = 'anilist'` on existing users (no-op if the column already has that default).
 7. Add MAL-specific tests mirroring the AniList tests.

@@ -1,36 +1,17 @@
-'use client';
-
-import Link from 'next/link';
-import { useEffect } from 'react';
-
-import { Button, buttonVariants } from '@/components/ui/button';
-
 type Props = {
-  error: Error & { digest?: string };
-  // Next 16 renamed `reset` to `unstable_retry` in the error boundary API.
-  unstable_retry: () => void;
+  error: Error;
 };
 
 // Branch on `error.name` (not `instanceof`) — custom class fields are stripped
 // when typed errors cross the RSC serialization boundary, but `name` survives.
-export default function MatchError({ error, unstable_retry }: Props) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
+export function MatchResultsError({ error }: Props) {
   const { title, description } = describe(error);
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
-      <h1 className="text-2xl font-semibold">{title}</h1>
-      <p className="text-muted-foreground max-w-md">{description}</p>
-      <div className="flex gap-2">
-        <Button onClick={() => unstable_retry()}>Try again</Button>
-        <Link href="/" className={buttonVariants({ variant: 'outline' })}>
-          Back to home
-        </Link>
-      </div>
-    </main>
+    <div className="flex w-full flex-col items-center gap-2 py-16 text-center">
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <p className="text-muted-foreground max-w-md text-sm">{description}</p>
+    </div>
   );
 }
 

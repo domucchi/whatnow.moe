@@ -11,11 +11,19 @@ const MIN_ROWS = 2;
 const MAX_ROWS = 10;
 const initialState: SubmitMatchState = {};
 
-export function UsernameListForm() {
+type Props = {
+  initialUsernames?: string[];
+};
+
+export function UsernameListForm({ initialUsernames = [] }: Props) {
   const [state, formAction, pending] = useActionState(submitMatch, initialState);
-  // Stable unique ids per row so React keys survive add/remove without
-  // reusing another row's input state.
-  const [rowIds, setRowIds] = useState<number[]>(() => [0, 1]);
+  // Seed row count from `initialUsernames` so deep links (`/?u=alice&u=bob&u=cho`)
+  // land with the right number of pre-filled rows. The parent re-keys this
+  // component when the URL changes, so we don't need to sync state afterward.
+  const [rowIds, setRowIds] = useState<number[]>(() => {
+    const count = Math.min(MAX_ROWS, Math.max(MIN_ROWS, initialUsernames.length));
+    return Array.from({ length: count }, (_, i) => i);
+  });
 
   const addRow = () => {
     setRowIds((prev) => (prev.length >= MAX_ROWS ? prev : [...prev, Math.max(-1, ...prev) + 1]));
@@ -39,6 +47,7 @@ export function UsernameListForm() {
               id={`username-${idx}`}
               name={`username-${idx}`}
               placeholder={`AniList username ${idx + 1}`}
+              defaultValue={initialUsernames[idx] ?? ''}
               autoComplete="off"
               autoCapitalize="none"
               autoCorrect="off"
