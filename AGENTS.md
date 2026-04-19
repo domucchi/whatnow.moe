@@ -1,3 +1,7 @@
+Next.js (App Router) with Neon/Drizzle databse.
+
+This project uses `pnpm`.
+
 # Code style
 
 - Don't write comments that restate what the code does
