@@ -1,8 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function LoadingMatch() {
+export function MatchResultsSkeleton() {
   return (
-    <main className="flex flex-1 flex-col gap-8 px-6 py-10">
+    <div className="flex w-full flex-col gap-8">
       <header className="flex flex-col gap-2">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-8 w-72" />
@@ -20,6 +20,6 @@ export default function LoadingMatch() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

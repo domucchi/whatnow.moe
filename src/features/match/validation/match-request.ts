@@ -58,3 +58,14 @@ export function parseUsernameSegment(segment: string): UserIdentifier {
   // Unknown prefix — fall back to AniList rather than silently misrouting.
   return { provider: 'anilist', username: segment.toLowerCase() };
 }
+
+export function parseUsernamesFromSearchParams(
+  searchParams: Record<string, string | string[] | undefined>,
+): UserIdentifier[] {
+  const raw = searchParams['u'];
+  const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  return values
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0)
+    .map(parseUsernameSegment);
+}

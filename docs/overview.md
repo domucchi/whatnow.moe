@@ -47,14 +47,9 @@ Next.js specifics: `src/app/` is the Next router folder (pages / layouts / route
 ├── src/
 │   ├── app/                              Next.js App Router (routes only; thin)
 │   │   ├── layout.tsx                    root layout, dark theme hardcoded
-│   │   ├── page.tsx                      home — renders features/match/components/username-list-form
-│   │   ├── loading.tsx
-│   │   ├── error.tsx
+│   │   ├── page.tsx                      single route — form + Suspense-wrapped results driven by ?u=… searchParams
 │   │   ├── globals.css
-│   │   └── match/[...usernames]/
-│   │       ├── page.tsx                  RSC — calls features/match/api/get-matches
-│   │       ├── loading.tsx               skeleton grid
-│   │       └── error.tsx                 typed errors surfaced here
+│   │   └── favicon.ico
 │   │
 │   ├── components/                       shared UI primitives (not features)
 │   │   └── ui/                           shadcn primitives
@@ -71,6 +66,9 @@ Next.js specifics: `src/app/` is the Next router folder (pages / layouts / route
 │   │       │   ├── username-list-form.tsx
 │   │       │   ├── anime-card.tsx
 │   │       │   ├── match-section.tsx
+│   │       │   ├── match-results.tsx
+│   │       │   ├── match-results-skeleton.tsx
+│   │       │   ├── match-results-error.tsx
 │   │       │   ├── filter-sidebar.tsx        Phase 2
 │   │       │   ├── sort-dropdown.tsx          Phase 2
 │   │       │   └── random-pick-button.tsx    Phase 2

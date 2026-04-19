@@ -10,7 +10,7 @@
 
 ### 2.0 — Design implementation pass
 
-- Review the supplied design and map each element to existing components (`username-list-form`, `anime-card`, `match-section`, `loading.tsx`, `error.tsx`).
+- Review the supplied design and map each element to existing components (`username-list-form`, `anime-card`, `match-section`, `match-results`, `match-results-skeleton`, `match-results-error`).
 - Create `docs/design-mapping.md` noting any new shared components, spacing/typography tokens, and shadcn overrides needed.
 - Update `src/app/globals.css` / Tailwind theme tokens to match the design palette (still dark-only).
 - Implement page-by-page. Keep behavior identical — this pass is pure visual redesign.
@@ -22,7 +22,7 @@
   - Options: `matches` (default), `score`, `popularity`, `year`.
   - URL-synced via `nuqs` (`useQueryState('sort')`).
 - Extend `getMatches` signature to accept `sort`; switch `ORDER BY` on the param (keep `match_count DESC` first; vary the secondary key).
-- Parse `searchParams` in `src/app/match/[...usernames]/page.tsx` and pass to `getMatches`.
+- Parse `searchParams` in `src/app/page.tsx` and pass to `getMatches`.
 
 ### 2.2 — Filter sidebar (broken into sub-steps)
 
@@ -34,7 +34,7 @@
   - Controls: genre multi-select (`<Checkbox>` list), format multi-select, year range (`<Slider>` 1960–current), min score (`<Slider>` 0–100), "include currently airing" `<Checkbox>`.
   - All controls URL-synced via `nuqs`.
   - "Reset filters" button clears URL params.
-- **2.2e — Hook into results page** — parse all filter params in `src/app/match/[...usernames]/page.tsx`, pass to `getMatches`, re-render sections.
+- **2.2e — Hook into results page** — parse all filter params in `src/app/page.tsx`, pass to `getMatches`, re-render sections.
 
 ### 2.3 — Random pick
 

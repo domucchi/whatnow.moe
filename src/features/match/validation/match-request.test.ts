@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { MatchRequestSchema, parseUsernameSegment } from './match-request';
+import {
+  MatchRequestSchema,
+  parseUsernameSegment,
+  parseUsernamesFromSearchParams,
+} from './match-request';
 
 describe('MatchRequestSchema', () => {
   it('accepts a minimum valid 2-user request', () => {
@@ -61,5 +65,44 @@ describe('parseUsernameSegment', () => {
 
   it('lowercases the username', () => {
     expect(parseUsernameSegment('Alice')).toEqual({ provider: 'anilist', username: 'alice' });
+  });
+});
+
+describe('parseUsernamesFromSearchParams', () => {
+  it('returns [] when no `u` param is present', () => {
+    expect(parseUsernamesFromSearchParams({})).toEqual([]);
+  });
+
+  it('handles a single `u` value (string, not array)', () => {
+    expect(parseUsernamesFromSearchParams({ u: 'alice' })).toEqual([
+      { provider: 'anilist', username: 'alice' },
+    ]);
+  });
+
+  it('handles multiple `u` values (repeated query param)', () => {
+    expect(parseUsernamesFromSearchParams({ u: ['alice', 'bob'] })).toEqual([
+      { provider: 'anilist', username: 'alice' },
+      { provider: 'anilist', username: 'bob' },
+    ]);
+  });
+
+  it('delegates provider parsing to parseUsernameSegment', () => {
+    expect(parseUsernamesFromSearchParams({ u: ['anilist:alice', 'mal:bob'] })).toEqual([
+      { provider: 'anilist', username: 'alice' },
+      { provider: 'mal', username: 'bob' },
+    ]);
+  });
+
+  it('trims whitespace and drops empty entries', () => {
+    expect(parseUsernamesFromSearchParams({ u: ['  alice ', '', '  ', 'bob'] })).toEqual([
+      { provider: 'anilist', username: 'alice' },
+      { provider: 'anilist', username: 'bob' },
+    ]);
+  });
+
+  it('ignores unrelated params', () => {
+    expect(parseUsernamesFromSearchParams({ u: 'alice', sort: 'score' })).toEqual([
+      { provider: 'anilist', username: 'alice' },
+    ]);
   });
 });
