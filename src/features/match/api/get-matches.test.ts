@@ -9,16 +9,18 @@ vi.mock('@/lib/cache/list-cache', () => ({
 // client) never loads during tests.
 vi.mock('@/lib/db/queries/matches', () => ({
   getMatches: vi.fn(),
+  getMatchStats: vi.fn(),
   replaceUserPlanningEntries: vi.fn(),
 }));
 
 const { getMatches } = await import('./get-matches');
 const { ensureUserListCached } = await import('@/lib/cache/list-cache');
-const { getMatches: getMatchesFromDb } = await import('@/lib/db/queries/matches');
+const { getMatches: getMatchesFromDb, getMatchStats } = await import('@/lib/db/queries/matches');
 
 const mocks = {
   ensureUserListCached: vi.mocked(ensureUserListCached),
   getMatchesFromDb: vi.mocked(getMatchesFromDb),
+  getMatchStats: vi.mocked(getMatchStats),
 };
 
 const baseMatchFields: Omit<MatchRow, 'id' | 'matchCount' | 'matchedUsers' | 'titleEnglish'> = {
@@ -49,11 +51,15 @@ function makeRow(overrides: Partial<MatchRow> & Pick<MatchRow, 'id'>): MatchRow 
 describe('getMatches (orchestrator)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.getMatchStats.mockResolvedValue({ scanned: 0, perUser: {} });
   });
 
-  it('returns [] when fewer than 2 users are provided', async () => {
-    const result = await getMatches({ users: [{ provider: 'anilist', username: 'alice' }] });
-    expect(result).toEqual([]);
+  it('returns empty matches when fewer than 2 users are provided', async () => {
+    const result = await getMatches({
+      users: [{ provider: 'anilist', username: 'alice' }],
+    });
+    expect(result.matches).toEqual([]);
+    expect(result.stats).toEqual({ scanned: 0, perUser: {} });
     expect(mocks.ensureUserListCached).not.toHaveBeenCalled();
     expect(mocks.getMatchesFromDb).not.toHaveBeenCalled();
   });
@@ -75,7 +81,7 @@ describe('getMatches (orchestrator)', () => {
     expect(mocks.ensureUserListCached).toHaveBeenNthCalledWith(3, 'anilist', 'charlie');
   });
 
-  it('passes onlyFinished through to the DB query', async () => {
+  it('always queries with broadest filters (mode=any, includeAiring=true)', async () => {
     mocks.getMatchesFromDb.mockResolvedValue([]);
 
     await getMatches({
@@ -83,16 +89,35 @@ describe('getMatches (orchestrator)', () => {
         { provider: 'anilist', username: 'alice' },
         { provider: 'anilist', username: 'bob' },
       ],
-      onlyFinished: false,
     });
 
     expect(mocks.getMatchesFromDb).toHaveBeenCalledWith({
       usernames: ['alice', 'bob'],
-      onlyFinished: false,
+      mode: 'any',
+      includeAiring: true,
+      sort: 'matches',
     });
   });
 
-  it('groups DB rows into descending match-count sections', async () => {
+  it('fetches match stats alongside the main query', async () => {
+    mocks.getMatchesFromDb.mockResolvedValue([]);
+    mocks.getMatchStats.mockResolvedValue({
+      scanned: 42,
+      perUser: { alice: 30, bob: 20 },
+    });
+
+    const result = await getMatches({
+      users: [
+        { provider: 'anilist', username: 'alice' },
+        { provider: 'anilist', username: 'bob' },
+      ],
+    });
+
+    expect(mocks.getMatchStats).toHaveBeenCalledWith(['alice', 'bob']);
+    expect(result.stats).toEqual({ scanned: 42, perUser: { alice: 30, bob: 20 } });
+  });
+
+  it('returns matches from the DB unchanged (the DB does the initial sort)', async () => {
     mocks.getMatchesFromDb.mockResolvedValue([
       makeRow({ id: 1, matchCount: 3, matchedUsers: ['alice', 'bob', 'charlie'] }),
       makeRow({ id: 2, matchCount: 3, matchedUsers: ['alice', 'bob', 'charlie'] }),
@@ -107,11 +132,7 @@ describe('getMatches (orchestrator)', () => {
       ],
     });
 
-    expect(result).toHaveLength(2);
-    expect(result[0]?.matchCount).toBe(3);
-    expect(result[0]?.totalInGroup).toBe(2);
-    expect(result[1]?.matchCount).toBe(2);
-    expect(result[1]?.totalInGroup).toBe(1);
+    expect(result.matches.map((m) => m.id)).toEqual([1, 2, 3]);
   });
 
   it('propagates errors from the cache layer', async () => {

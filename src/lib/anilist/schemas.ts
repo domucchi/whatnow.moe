@@ -46,6 +46,13 @@ export const PlanningListResponseSchema = z.object({
 });
 export type PlanningListResponse = z.infer<typeof PlanningListResponseSchema>;
 
+export const GenreCollectionResponseSchema = z.object({
+  data: z.object({
+    GenreCollection: z.array(z.string()).nullable(),
+  }),
+});
+export type GenreCollectionResponse = z.infer<typeof GenreCollectionResponseSchema>;
+
 export const AnilistErrorResponseSchema = z.object({
   errors: z.array(
     z.object({

@@ -1,46 +1,50 @@
 import { getMatches } from '@/features/match/api/get-matches';
-import { MatchResultsError } from '@/features/match/components/match-results-error';
-import { MatchSection } from '@/features/match/components/match-section';
-import type { MatchResult, UserIdentifier } from '@/features/match/types';
+import type { AnimeWithMatchInfo, MatchStats, UserIdentifier } from '@/features/match/types';
+
+import { AppShell } from './app-shell';
 
 type Props = {
   users: UserIdentifier[];
-  onlyFinished: boolean;
+  genres: string[];
+  initialUsernames: string[];
 };
 
-export async function MatchResults({ users, onlyFinished }: Props) {
-  let result: MatchResult;
-  try {
-    result = await getMatches({ users, onlyFinished });
-  } catch (err) {
-    return <MatchResultsError error={err as Error} />;
-  }
+type FetchResult = {
+  matches: AnimeWithMatchInfo[];
+  stats: MatchStats;
+  error: string | null;
+};
 
-  const totalUsers = users.length;
-  const humanList = users.map((u) => u.username).join(', ');
+async function fetchUnfiltered(users: UserIdentifier[]): Promise<FetchResult> {
+  try {
+    const { matches, stats } = await getMatches({ users });
+    return { matches, stats, error: null };
+  } catch (err) {
+    return {
+      matches: [],
+      stats: { scanned: 0, perUser: {} },
+      error: (err as Error).name,
+    };
+  }
+}
+
+// Thin RSC: fetch the unfiltered match set + stats, then hand off to the
+// client `AppShell` which runs all filter/sort/mode logic in-memory.
+export async function MatchResults({ users, genres, initialUsernames }: Props) {
+  const started = users.length >= 2;
+  const { matches, stats, error } = started
+    ? await fetchUnfiltered(users)
+    : { matches: [] as AnimeWithMatchInfo[], stats: { scanned: 0, perUser: {} }, error: null };
 
   return (
-    <div className="flex w-full flex-col gap-8">
-      <header className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-sm">Matches for</p>
-        <h2 className="text-2xl font-semibold tracking-tight">{humanList}</h2>
-      </header>
-
-      {result.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-16 text-center">
-          <p className="text-lg font-medium">No overlaps yet.</p>
-          <p className="text-muted-foreground max-w-md text-sm">
-            None of these users share a finished anime in their PLANNING list. Try adding another
-            user or check the spelling.
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-10">
-          {result.map((group) => (
-            <MatchSection key={group.matchCount} group={group} totalUsers={totalUsers} />
-          ))}
-        </div>
-      )}
-    </div>
+    <AppShell
+      initialUsernames={initialUsernames}
+      allUsernames={initialUsernames}
+      allMatches={matches}
+      stats={stats}
+      genres={genres}
+      started={started}
+      error={error}
+    />
   );
 }
