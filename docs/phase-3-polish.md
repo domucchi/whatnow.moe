@@ -46,12 +46,15 @@
 - Create a Neon production branch; separate `DATABASE_URL_PROD`.
 - Run migrations against prod branch.
 
-### 3.7 — Vercel deploy
+### 3.7 — CI-gated Vercel deploy
 
-- Connect the GitHub repo to Vercel.
-- Set env vars in Vercel: `DATABASE_URL` (prod), `ANILIST_USER_AGENT`.
-- Configure preview deploys to use a Neon branch per PR (via Neon's Vercel integration).
-- Verify first production deploy works end-to-end.
+The Vercel Git integration is intentionally NOT connected — Vercel's default auto-deploy does not wait for GitHub Actions, so a failing build could still ship. Instead `.github/workflows/ci.yml` drives the production deploy via the Vercel CLI, and only after `check` passes.
+
+- Run `pnpm dlx vercel@latest login` and `vercel link` once locally to register the project with the Vercel org; capture `orgId` and `projectId` from `.vercel/project.json`.
+- Add three GitHub repo secrets: `VERCEL_TOKEN` (from https://vercel.com/account/tokens), `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+- Set env vars in Vercel Project Settings (NOT as GitHub secrets): `DATABASE_URL` and `ANILIST_USER_AGENT` for Production. `vercel pull --environment=production` fetches them into `.vercel/.env.production.local` at build time.
+- On pushes to `main`, `check` runs first (lint, typecheck, test). On success, `deploy-production` runs `vercel pull` → `vercel build --prod` → `vercel deploy --prebuilt --prod`. PRs are not deployed — they only run `check`.
+- Confirm in Vercel dashboard that Project → Settings → Git shows "No Git Repository Connected".
 
 ### 3.8 — (Optional) Vercel Cron for anime refresh
 
@@ -65,7 +68,7 @@
 
 ## Done when
 
-- All unit + Playwright tests pass in CI (GitHub Actions hooked to Vercel).
+- All unit + Playwright tests pass in CI (GitHub Actions gates every Vercel deploy).
 - Axe accessibility scan is clean on home and results pages.
 - Shared `/match/...` URL renders a nice OG preview in a chat app.
 - Production URL on Vercel serves the app; Neon prod DB is populated via first real requests.
