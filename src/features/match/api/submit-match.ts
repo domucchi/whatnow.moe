@@ -31,7 +31,5 @@ export async function submitMatch(
     return { errors: parsed.error.flatten() };
   }
 
-  console.log('parsed', parsed);
-
   redirect(`/match/${parsed.data.usernames.join('/')}`);
 }
