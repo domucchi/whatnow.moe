@@ -1,11 +1,11 @@
 type Props = {
-  error: Error;
+  errorName: string;
 };
 
 // Branch on `error.name` (not `instanceof`) — custom class fields are stripped
 // when typed errors cross the RSC serialization boundary, but `name` survives.
-export function MatchResultsError({ error }: Props) {
-  const { title, description } = describe(error);
+export function MatchResultsError({ errorName }: Props) {
+  const { title, description } = describe(errorName);
 
   return (
     <div className="flex w-full flex-col items-center gap-2 py-16 text-center">
@@ -15,13 +15,12 @@ export function MatchResultsError({ error }: Props) {
   );
 }
 
-function describe(error: Error): { title: string; description: string } {
-  switch (error.name) {
+function describe(name: string): { title: string; description: string } {
+  switch (name) {
     case 'UserNotFoundError':
       return {
         title: 'User not found',
         description:
-          error.message ||
           'One of the AniList usernames could not be found. Double-check the spelling and try again.',
       };
     case 'RateLimitError':
@@ -43,7 +42,7 @@ function describe(error: Error): { title: string; description: string } {
     default:
       return {
         title: 'Something went wrong',
-        description: error.message || 'An unexpected error occurred.',
+        description: 'An unexpected error occurred.',
       };
   }
 }

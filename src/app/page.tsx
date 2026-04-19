@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
 
+import { getGenres } from '@/lib/anilist/genres';
 import { MatchResults } from '@/features/match/components/match-results';
 import { MatchResultsSkeleton } from '@/features/match/components/match-results-skeleton';
-import { UsernameListForm } from '@/features/match/components/username-list-form';
+import { MatchSidebar } from '@/features/match/components/match-sidebar';
 import { parseUsernamesFromSearchParams } from '@/features/match/validation/match-request';
 
 type Props = {
@@ -12,28 +13,40 @@ type Props = {
 export default async function HomePage({ searchParams }: Props) {
   const sp = await searchParams;
   const users = parseUsernamesFromSearchParams(sp);
-  const hasUsers = users.length >= 2;
-  // Re-key the form + suspense boundary on the username set so URL-driven
-  // changes (back/forward, shared link) remount uncontrolled inputs and reset
-  // the skeleton fallback instead of reconciling against a stale tree.
-  const usersKey = users.map((u) => `${u.provider}:${u.username}`).join('|');
+  const initialUsernames = users.map((u) => u.username);
+
+  // Suspense key hashes only `users` — filter / sort / mode / view are all
+  // applied client-side, so changing them must not re-suspend.
+  const resultsKey = initialUsernames.join('|');
+
+  // Genres load alongside the match fetch — static for a given process, so
+  // effectively free after the first request.
+  const genres = await getGenres();
 
   return (
-    <main className="flex flex-1 flex-col items-center gap-10 px-6 py-10">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight">whatnow.moe</h1>
-        <p className="text-muted-foreground text-lg">
-          Find anime you and your friends all want to watch.
-        </p>
-      </div>
+    <Suspense
+      key={resultsKey}
+      fallback={<SidebarWithSkeleton initialUsernames={initialUsernames} />}
+    >
+      <MatchResults users={users} genres={genres} initialUsernames={initialUsernames} />
+    </Suspense>
+  );
+}
 
-      <UsernameListForm key={`form:${usersKey}`} initialUsernames={users.map((u) => u.username)} />
-
-      {hasUsers && (
-        <Suspense key={`results:${usersKey}`} fallback={<MatchResultsSkeleton />}>
-          <MatchResults users={users} onlyFinished />
-        </Suspense>
-      )}
-    </main>
+// Keeps the sidebar painted while the results pane streams in — feels much
+// snappier than blanking the whole screen on submit.
+function SidebarWithSkeleton({ initialUsernames }: { initialUsernames: string[] }) {
+  return (
+    <div className="flex min-h-full w-full flex-col lg:flex-row">
+      <MatchSidebar
+        initialUsernames={initialUsernames}
+        started={initialUsernames.length >= 2}
+        matches={[]}
+        stats={null}
+      />
+      <main className="flex min-w-0 flex-1 flex-col">
+        <MatchResultsSkeleton />
+      </main>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   MatchRequestSchema,
+  parseFiltersFromSearchParams,
   parseUsernameSegment,
   parseUsernamesFromSearchParams,
 } from './match-request';
@@ -10,7 +11,10 @@ describe('MatchRequestSchema', () => {
   it('accepts a minimum valid 2-user request', () => {
     const parsed = MatchRequestSchema.parse({ usernames: ['alice', 'bob'] });
     expect(parsed.usernames).toEqual(['alice', 'bob']);
-    expect(parsed.onlyFinished).toBe(true);
+    expect(parsed.includeAiring).toBe(false);
+    expect(parsed.sort).toBe('matches');
+    expect(parsed.mode).toBe('any');
+    expect(parsed.view).toBe('grid');
   });
 
   it('lowercases and dedupes usernames', () => {
@@ -104,5 +108,67 @@ describe('parseUsernamesFromSearchParams', () => {
     expect(parseUsernamesFromSearchParams({ u: 'alice', sort: 'score' })).toEqual([
       { provider: 'anilist', username: 'alice' },
     ]);
+  });
+});
+
+describe('parseFiltersFromSearchParams', () => {
+  it('returns schema defaults when no filter params are present', () => {
+    expect(parseFiltersFromSearchParams({})).toEqual({
+      genres: undefined,
+      formats: undefined,
+      yearMin: undefined,
+      yearMax: undefined,
+      scoreMin: undefined,
+      scoreMax: undefined,
+      includeAiring: false,
+      sort: 'matches',
+      mode: 'any',
+      view: 'grid',
+    });
+  });
+
+  it('parses repeated genre params into an array', () => {
+    expect(parseFiltersFromSearchParams({ genre: ['Action', 'Mecha'] }).genres).toEqual([
+      'Action',
+      'Mecha',
+    ]);
+  });
+
+  it('drops unknown format values', () => {
+    expect(parseFiltersFromSearchParams({ format: ['TV', 'BOGUS', 'MOVIE'] }).formats).toEqual([
+      'TV',
+      'MOVIE',
+    ]);
+  });
+
+  it('rejects out-of-range year / score values', () => {
+    const filters = parseFiltersFromSearchParams({
+      yearMin: '1800',
+      yearMax: '9999',
+      scoreMin: '-5',
+      scoreMax: '200',
+    });
+    expect(filters.yearMin).toBeUndefined();
+    expect(filters.yearMax).toBeUndefined();
+    expect(filters.scoreMin).toBeUndefined();
+    expect(filters.scoreMax).toBeUndefined();
+  });
+
+  it('coerces boolean includeAiring from 1/true', () => {
+    expect(parseFiltersFromSearchParams({ includeAiring: 'true' }).includeAiring).toBe(true);
+    expect(parseFiltersFromSearchParams({ includeAiring: '1' }).includeAiring).toBe(true);
+    expect(parseFiltersFromSearchParams({ includeAiring: 'false' }).includeAiring).toBe(false);
+    expect(parseFiltersFromSearchParams({}).includeAiring).toBe(false);
+  });
+
+  it('defaults sort / mode / view when the param is garbage', () => {
+    const filters = parseFiltersFromSearchParams({
+      sort: 'bogus',
+      mode: 'bogus',
+      view: 'bogus',
+    });
+    expect(filters.sort).toBe('matches');
+    expect(filters.mode).toBe('any');
+    expect(filters.view).toBe('grid');
   });
 });

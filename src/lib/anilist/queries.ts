@@ -28,3 +28,9 @@ export const PLANNING_LIST_QUERY = /* GraphQL */ `
     }
   }
 `;
+
+export const GENRE_COLLECTION_QUERY = /* GraphQL */ `
+  query GenreCollection {
+    GenreCollection
+  }
+`;
