@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, jest, mock, type Mock } from 'bun:test';
 
 import { UserNotFoundError } from '@/lib/anilist/errors';
 import {
@@ -6,22 +6,27 @@ import {
   userNotFoundResponse,
 } from '@/testing/fixtures/anilist-responses';
 
-vi.mock('@/lib/anilist/client', () => ({
-  fetchPlanningList: vi.fn(),
+await mock.module('@/lib/anilist/client', () => ({
+  fetchPlanningList: mock(),
 }));
-vi.mock('@/lib/db/queries/users', () => ({
-  getUserMeta: vi.fn(),
-  upsertUser: vi.fn(),
-  markUserNotFound: vi.fn(),
+await mock.module('@/lib/db/queries/users', () => ({
+  getUserMeta: mock(),
+  upsertUser: mock(),
+  markUserNotFound: mock(),
 }));
-vi.mock('@/lib/db/queries/anime', () => ({
-  upsertAnimeBatch: vi.fn(),
+await mock.module('@/lib/db/queries/anime', () => ({
+  upsertAnimeBatch: mock(),
 }));
-vi.mock('@/lib/db/queries/matches', () => ({
-  replaceUserPlanningEntries: vi.fn(),
+// Mock the full module shape (not just replaceUserPlanningEntries) so that
+// bun's shared module-mock state stays consistent with other test files that
+// mock this same path — otherwise an incomplete mock leaks across files.
+await mock.module('@/lib/db/queries/matches', () => ({
+  getMatches: mock(),
+  getMatchStats: mock(),
+  replaceUserPlanningEntries: mock(),
 }));
 
-// Imported after vi.mock so the mocked copies are used.
+// Imported after mock.module so the mocked copies are used.
 const { ensureUserListCached } = await import('./list-cache');
 const { fetchPlanningList } = await import('@/lib/anilist/client');
 const { getUserMeta, upsertUser, markUserNotFound } = await import('@/lib/db/queries/users');
@@ -29,12 +34,12 @@ const { upsertAnimeBatch } = await import('@/lib/db/queries/anime');
 const { replaceUserPlanningEntries } = await import('@/lib/db/queries/matches');
 
 const mocks = {
-  fetchPlanningList: vi.mocked(fetchPlanningList),
-  getUserMeta: vi.mocked(getUserMeta),
-  upsertUser: vi.mocked(upsertUser),
-  markUserNotFound: vi.mocked(markUserNotFound),
-  upsertAnimeBatch: vi.mocked(upsertAnimeBatch),
-  replaceUserPlanningEntries: vi.mocked(replaceUserPlanningEntries),
+  fetchPlanningList: fetchPlanningList as Mock<typeof fetchPlanningList>,
+  getUserMeta: getUserMeta as Mock<typeof getUserMeta>,
+  upsertUser: upsertUser as Mock<typeof upsertUser>,
+  markUserNotFound: markUserNotFound as Mock<typeof markUserNotFound>,
+  upsertAnimeBatch: upsertAnimeBatch as Mock<typeof upsertAnimeBatch>,
+  replaceUserPlanningEntries: replaceUserPlanningEntries as Mock<typeof replaceUserPlanningEntries>,
 };
 
 const oneHour = 60 * 60 * 1000;
@@ -42,7 +47,7 @@ const fiveMinutes = 5 * 60 * 1000;
 
 describe('ensureUserListCached', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mocks.upsertUser.mockResolvedValue(42);
   });
 
@@ -71,7 +76,7 @@ describe('ensureUserListCached', () => {
     await ensureUserListCached('anilist', 'alice');
 
     expect(mocks.fetchPlanningList).toHaveBeenCalledWith('alice');
-    expect(mocks.upsertAnimeBatch).toHaveBeenCalledOnce();
+    expect(mocks.upsertAnimeBatch).toHaveBeenCalledTimes(1);
     const animeArg = mocks.upsertAnimeBatch.mock.calls[0]?.[0] ?? [];
     expect(animeArg).toHaveLength(2);
     expect(mocks.upsertUser).toHaveBeenCalledWith('anilist', 'alice');

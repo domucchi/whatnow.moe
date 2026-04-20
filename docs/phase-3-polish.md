@@ -38,7 +38,7 @@
 
 - Verify `next/image` is used for all AniList covers with `remotePatterns` in `next.config.ts`.
 - Add `priority` to the first row of the results grid.
-- Audit bundle with `bun run build` — keep route bundles under 150 KB gzipped.
+- Audit bundle with `bun build` — keep route bundles under 150 KB gzipped.
 - Confirm `/` is rendered on-demand (dynamic RSC) whenever `searchParams` are present — not attempted at build.
 
 ### 3.6 — Migrations & production DB
@@ -65,7 +65,7 @@ The Vercel Git integration is intentionally NOT connected — Vercel's default a
 
 ### 3.9 — README
 
-- Write a project `README.md` covering: what it does, tech stack, local setup (Neon, `.env.local`, `bun install`, `bun run db:push`, `bun run dev`), deployment link, a screenshot.
+- Write a project `README.md` covering: what it does, tech stack, local setup (Neon, `.env.local`, `bun install`, `bun db:push`, `bun dev`), deployment link, a screenshot.
 
 ## Done when
 
@@ -74,4 +74,4 @@ The Vercel Git integration is intentionally NOT connected — Vercel's default a
 - Shared `/?u=...` URL renders a nice OG preview in a chat app (or, if `searchParams` aren't available to `opengraph-image.tsx`, the generic site OG is good enough).
 - Production URL on Vercel serves the app; Neon prod DB is populated via first real requests.
 - README exists with local-setup steps.
-- `bun run lint && bun run typecheck && bun run test` are all clean — bulletproof-react import rules still hold with all Phase 2 + 3 additions.
+- `bun lint && bun typecheck && bun test` are all clean — bulletproof-react import rules still hold with all Phase 2 + 3 additions.

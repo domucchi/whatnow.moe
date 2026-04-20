@@ -14,7 +14,7 @@
 
 - Run `bun create next-app .` inside the anilist-match folder.
 - Answers: TypeScript ✓, ESLint ✓, Tailwind ✓, **`src/` dir ✓** (bulletproof-react requires this), App Router ✓, import alias `@/*` → `./src/*`, Turbopack ✓.
-- Verify `bun run dev` boots.
+- Verify `bun dev` boots.
 
 ### 0.2 — Install core dependencies
 
@@ -74,7 +74,7 @@ bun add -D eslint-plugin-check-file eslint-plugin-import eslint-config-prettier
   - **Kebab-case filenames and folders** via `check-file/filename-naming-convention` and `check-file/folder-naming-convention` (scope: `src/**/!(__tests__)`).
   - **No direct `process.env` access** except in `src/config/env.ts` (via `no-restricted-syntax`).
   - **Prettier as last extends** so Prettier wins formatting conflicts.
-- Run `bun run lint` — clean.
+- Run `bun lint` — clean.
 
 ### 0.7 — Husky + lint-staged pre-commit gate
 
@@ -91,7 +91,7 @@ bunx husky init
     "*.{json,md,css}": ["prettier --write"]
   }
   ```
-- Add a separate pre-push hook `.husky/pre-push` that runs `bun run typecheck && bun run test` so commits stay fast but broken code can't be pushed.
+- Add a separate pre-push hook `.husky/pre-push` that runs `bun typecheck && bun test` so commits stay fast but broken code can't be pushed.
 
 ### 0.8 — Env var validation (`src/config/env.ts`)
 
@@ -147,9 +147,9 @@ bunx husky init
     "prepare": "husky"
   }
   ```
-- Run `bun run lint && bun run typecheck && bun run format:check` — all clean.
-- Run `bun run dev` → localhost:3000 shows the placeholder h1 on a dark background.
-- Run `bun run db:studio` → the three empty tables are visible.
+- Run `bun lint && bun typecheck && bun format:check` — all clean.
+- Run `bun dev` → localhost:3000 shows the placeholder h1 on a dark background.
+- Run `bun db:studio` → the three empty tables are visible.
 
 ### 0.13 — Initial commit
 
@@ -157,11 +157,11 @@ bunx husky init
 
 ## Done when
 
-- `bun run dev` shows a dark page with "anilist-match"
-- `bun run db:studio` lists the three tables
+- `bun dev` shows a dark page with "anilist-match"
+- `bun db:studio` lists the three tables
 - `.env.local` exists and is gitignored
 - `src/components/ui/` has all the shadcn primitives
-- `bun run lint`, `bun run typecheck`, `bun run format:check` are all clean
+- `bun lint`, `bun typecheck`, `bun format:check` are all clean
 - Attempting a commit with a TypeScript error or ESLint violation is blocked by the pre-commit hook (verify by breaking something intentionally)
 
 ## Notes

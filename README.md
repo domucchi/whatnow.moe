@@ -20,7 +20,7 @@ Public lists only — no OAuth, no private data.
 - **Database:** Neon Postgres + Drizzle ORM
 - **Validation:** Zod (shared between client and server)
 - **URL state:** nuqs
-- **Testing:** Vitest
+- **Testing:** Bun test runner
 - **Deployment:** Vercel + Neon (branch-per-preview)
 
 See [`docs/overview.md`](./docs/overview.md) for architecture, data model, and the matching SQL.
@@ -32,27 +32,27 @@ Requirements: Node.js 20+, bun, a Neon Postgres database.
 ```bash
 bun install
 cp .env.example .env.local      # fill in DATABASE_URL and ANILIST_USER_AGENT
-bun run db:push                 # apply the Drizzle schema
-bun run dev
+bun db:push                 # apply the Drizzle schema
+bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script                                    | Purpose                         |
-| ----------------------------------------- | ------------------------------- |
-| `bun run dev`                             | Start the Next.js dev server    |
-| `bun run build`                           | Production build                |
-| `bun run start`                           | Run the production build        |
-| `bun run lint`                            | ESLint                          |
-| `bun run typecheck`                       | `tsc --noEmit`                  |
-| `bun run format` / `bun run format:check` | Prettier                        |
-| `bun run test` / `bun run test:watch`     | Vitest                          |
-| `bun run db:generate`                     | Generate a Drizzle migration    |
-| `bun run db:migrate`                      | Apply migrations                |
-| `bun run db:push`                         | Push schema directly (dev only) |
-| `bun run db:studio`                       | Open Drizzle Studio             |
+| Script                            | Purpose                         |
+| --------------------------------- | ------------------------------- |
+| `bun dev`                         | Start the Next.js dev server    |
+| `bun build`                       | Production build                |
+| `bun start`                       | Run the production build        |
+| `bun lint`                        | ESLint                          |
+| `bun typecheck`                   | `tsc --noEmit`                  |
+| `bun format` / `bun format:check` | Prettier                        |
+| `bun test` / `bun test:watch`     | Vitest                          |
+| `bun db:generate`                 | Generate a Drizzle migration    |
+| `bun db:migrate`                  | Apply migrations                |
+| `bun db:push`                     | Push schema directly (dev only) |
+| `bun db:studio`                   | Open Drizzle Studio             |
 
 ## Project conventions
 
