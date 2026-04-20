@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 
 import type { MatchRow } from '@/lib/db/queries/matches';
 import type { MatchFilters } from '@/features/match/validation/match-request';

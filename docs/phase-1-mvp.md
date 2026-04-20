@@ -109,9 +109,9 @@ Keep these thin — they import from the feature. There is only one results-capa
 
 ### 1.8 — Test plumbing
 
-- Install: `bun add -D vitest @vitest/ui`.
-- Create `vitest.config.ts` with the `@/*` path alias mirrored from `tsconfig.json` (via `vite-tsconfig-paths`).
-- Scripts: `"test": "vitest run"`, `"test:watch": "vitest"`.
+- Bun's built-in test runner handles this — no install, no config. It reads `tsconfig.json` `paths` natively so `@/*` resolves.
+- Scripts: `"test": "bun test"`, `"test:watch": "bun test --watch"`.
+- Tests import from `'bun:test'` (`describe`, `it`, `expect`, `mock`, `jest`, `type Mock`).
 - `src/testing/fixtures/` — JSON fixtures for AniList responses (used by tests in 1.1 and 1.4).
 
 ## Done when
@@ -124,8 +124,8 @@ Keep these thin — they import from the feature. There is only one results-capa
 - Submitting an invalid username shows the inline Zod error without hitting the server.
 - Submitting a nonexistent user shows "User `xyz` not found" inline beneath the form while the form stays editable.
 - 3+ users show correctly grouped sections.
-- `bun run test` passes matching + schema + cache unit tests.
-- `bun run lint && bun run typecheck` stay clean (bulletproof import rules didn't flag anything).
+- `bun test` passes matching + schema + cache unit tests.
+- `bun lint && bun typecheck` stay clean (bulletproof import rules didn't flag anything).
 
 ## Hand-off to Phase 2
 

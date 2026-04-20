@@ -1,16 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, jest, mock, type Mock } from 'bun:test';
 
 import type { MatchRow } from '@/lib/db/queries/matches';
 
-vi.mock('@/lib/cache/list-cache', () => ({
-  ensureUserListCached: vi.fn(),
+await mock.module('@/lib/cache/list-cache', () => ({
+  ensureUserListCached: mock(),
 }));
 // Mock the whole matches module so the real one (which imports env + the DB
 // client) never loads during tests.
-vi.mock('@/lib/db/queries/matches', () => ({
-  getMatches: vi.fn(),
-  getMatchStats: vi.fn(),
-  replaceUserPlanningEntries: vi.fn(),
+await mock.module('@/lib/db/queries/matches', () => ({
+  getMatches: mock(),
+  getMatchStats: mock(),
+  replaceUserPlanningEntries: mock(),
 }));
 
 const { getMatches } = await import('./get-matches');
@@ -18,9 +18,9 @@ const { ensureUserListCached } = await import('@/lib/cache/list-cache');
 const { getMatches: getMatchesFromDb, getMatchStats } = await import('@/lib/db/queries/matches');
 
 const mocks = {
-  ensureUserListCached: vi.mocked(ensureUserListCached),
-  getMatchesFromDb: vi.mocked(getMatchesFromDb),
-  getMatchStats: vi.mocked(getMatchStats),
+  ensureUserListCached: ensureUserListCached as Mock<typeof ensureUserListCached>,
+  getMatchesFromDb: getMatchesFromDb as Mock<typeof getMatchesFromDb>,
+  getMatchStats: getMatchStats as Mock<typeof getMatchStats>,
 };
 
 const baseMatchFields: Omit<MatchRow, 'id' | 'matchCount' | 'matchedUsers' | 'titleEnglish'> = {
@@ -50,7 +50,7 @@ function makeRow(overrides: Partial<MatchRow> & Pick<MatchRow, 'id'>): MatchRow 
 
 describe('getMatches (orchestrator)', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mocks.getMatchStats.mockResolvedValue({ scanned: 0, perUser: {} });
   });
 
