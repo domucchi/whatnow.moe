@@ -27,32 +27,32 @@ See [`docs/overview.md`](./docs/overview.md) for architecture, data model, and t
 
 ## Getting started
 
-Requirements: Node.js 20+, pnpm, a Neon Postgres database.
+Requirements: Node.js 20+, bun, a Neon Postgres database.
 
 ```bash
-pnpm install
+bun install
 cp .env.example .env.local      # fill in DATABASE_URL and ANILIST_USER_AGENT
-pnpm db:push                    # apply the Drizzle schema
-pnpm dev
+bun run db:push                 # apply the Drizzle schema
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script                              | Purpose                         |
-| ----------------------------------- | ------------------------------- |
-| `pnpm dev`                          | Start the Next.js dev server    |
-| `pnpm build`                        | Production build                |
-| `pnpm start`                        | Run the production build        |
-| `pnpm lint`                         | ESLint                          |
-| `pnpm typecheck`                    | `tsc --noEmit`                  |
-| `pnpm format` / `pnpm format:check` | Prettier                        |
-| `pnpm test` / `pnpm test:watch`     | Vitest                          |
-| `pnpm db:generate`                  | Generate a Drizzle migration    |
-| `pnpm db:migrate`                   | Apply migrations                |
-| `pnpm db:push`                      | Push schema directly (dev only) |
-| `pnpm db:studio`                    | Open Drizzle Studio             |
+| Script                                    | Purpose                         |
+| ----------------------------------------- | ------------------------------- |
+| `bun run dev`                             | Start the Next.js dev server    |
+| `bun run build`                           | Production build                |
+| `bun run start`                           | Run the production build        |
+| `bun run lint`                            | ESLint                          |
+| `bun run typecheck`                       | `tsc --noEmit`                  |
+| `bun run format` / `bun run format:check` | Prettier                        |
+| `bun run test` / `bun run test:watch`     | Vitest                          |
+| `bun run db:generate`                     | Generate a Drizzle migration    |
+| `bun run db:migrate`                      | Apply migrations                |
+| `bun run db:push`                         | Push schema directly (dev only) |
+| `bun run db:studio`                       | Open Drizzle Studio             |
 
 ## Project conventions
 

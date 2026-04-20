@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- Node 20+ and pnpm installed
+- Node 20+ and bun installed
 - A Neon account (https://neon.tech)
 - This directory exists and is empty: `/Users/domucchi/Code/personal/anilist-match`
 
@@ -12,20 +12,20 @@
 
 ### 0.1 — Create Next.js project
 
-- Run `pnpm create next-app@latest .` inside the anilist-match folder.
+- Run `bun create next-app .` inside the anilist-match folder.
 - Answers: TypeScript ✓, ESLint ✓, Tailwind ✓, **`src/` dir ✓** (bulletproof-react requires this), App Router ✓, import alias `@/*` → `./src/*`, Turbopack ✓.
-- Verify `pnpm dev` boots.
+- Verify `bun run dev` boots.
 
 ### 0.2 — Install core dependencies
 
 ```
-pnpm add drizzle-orm @neondatabase/serverless zod nuqs
-pnpm add -D drizzle-kit @types/node
+bun add drizzle-orm @neondatabase/serverless zod nuqs
+bun add -D drizzle-kit @types/node
 ```
 
 ### 0.3 — Initialize shadcn/ui
 
-- Run `pnpm dlx shadcn@latest init`. Pick Default style, Neutral base color, CSS variables, components path `@/components/ui`.
+- Run `bunx shadcn@latest init`. Pick Default style, Neutral base color, CSS variables, components path `@/components/ui`.
 - Add primitives: `button input label skeleton sheet badge dropdown-menu checkbox slider`.
 - Commit the generated `src/components/ui/` files.
 
@@ -33,12 +33,12 @@ pnpm add -D drizzle-kit @types/node
 
 - In `tsconfig.json` under `compilerOptions`, ensure: `"strict": true`, `"noUncheckedIndexedAccess": true`, `"noImplicitOverride": true`, `"noFallthroughCasesInSwitch": true`.
 - Confirm the path alias: `"paths": { "@/*": ["./src/*"] }`.
-- Run `pnpm tsc --noEmit` — clean.
+- Run `bunx tsc --noEmit` — clean.
 
 ### 0.5 — Prettier
 
 ```
-pnpm add -D prettier prettier-plugin-tailwindcss
+bun add -D prettier prettier-plugin-tailwindcss
 ```
 
 - `.prettierrc`:
@@ -53,7 +53,7 @@ pnpm add -D prettier prettier-plugin-tailwindcss
     "plugins": ["prettier-plugin-tailwindcss"]
   }
   ```
-- `.prettierignore`: `node_modules`, `.next`, `drizzle/`, `pnpm-lock.yaml`.
+- `.prettierignore`: `node_modules`, `.next`, `drizzle/`, `bun.lock`.
 - Add script: `"format": "prettier --write ."` and `"format:check": "prettier --check ."`.
 
 ### 0.6 — ESLint with bulletproof-react rules
@@ -61,7 +61,7 @@ pnpm add -D prettier prettier-plugin-tailwindcss
 Extend the Next default config to enforce our architecture.
 
 ```
-pnpm add -D eslint-plugin-check-file eslint-plugin-import eslint-config-prettier
+bun add -D eslint-plugin-check-file eslint-plugin-import eslint-config-prettier
 ```
 
 - `eslint.config.mjs` should include:
@@ -74,16 +74,16 @@ pnpm add -D eslint-plugin-check-file eslint-plugin-import eslint-config-prettier
   - **Kebab-case filenames and folders** via `check-file/filename-naming-convention` and `check-file/folder-naming-convention` (scope: `src/**/!(__tests__)`).
   - **No direct `process.env` access** except in `src/config/env.ts` (via `no-restricted-syntax`).
   - **Prettier as last extends** so Prettier wins formatting conflicts.
-- Run `pnpm lint` — clean.
+- Run `bun run lint` — clean.
 
 ### 0.7 — Husky + lint-staged pre-commit gate
 
 ```
-pnpm add -D husky lint-staged
-pnpm dlx husky init
+bun add -D husky lint-staged
+bunx husky init
 ```
 
-- `.husky/pre-commit`: `pnpm lint-staged` (one line).
+- `.husky/pre-commit`: `bunx lint-staged` (one line).
 - `package.json` `"lint-staged"`:
   ```json
   {
@@ -91,7 +91,7 @@ pnpm dlx husky init
     "*.{json,md,css}": ["prettier --write"]
   }
   ```
-- Add a separate pre-push hook `.husky/pre-push` that runs `pnpm typecheck && pnpm test` so commits stay fast but broken code can't be pushed.
+- Add a separate pre-push hook `.husky/pre-push` that runs `bun run typecheck && bun run test` so commits stay fast but broken code can't be pushed.
 
 ### 0.8 — Env var validation (`src/config/env.ts`)
 
@@ -120,7 +120,7 @@ pnpm dlx husky init
 - `src/lib/db/index.ts`: Drizzle client using `@neondatabase/serverless` + `env.DATABASE_URL` from `@/config/env`.
 - `src/lib/db/schema.ts` with the three tables (`users`, `anime`, `user_planning_entries`) + indexes on `user_planning_entries.anime_id` and `anime.mal_id`. Use `citext` for `users.username`. Include `users.provider` (default `'anilist'`) and `anime.mal_id` (nullable) from day 1 — see [future-multi-provider.md](./future-multi-provider.md).
 - First migration file `drizzle/0000_init.sql` starts with `CREATE EXTENSION IF NOT EXISTS citext;` before the tables.
-- Run `pnpm drizzle-kit generate` then `pnpm drizzle-kit push`. Verify tables in Neon console.
+- Run `bunx drizzle-kit generate` then `bunx drizzle-kit push`. Verify tables in Neon console.
 
 ### 0.11 — Dark theme (hardcoded)
 
@@ -147,9 +147,9 @@ pnpm dlx husky init
     "prepare": "husky"
   }
   ```
-- Run `pnpm lint && pnpm typecheck && pnpm format:check` — all clean.
-- Run `pnpm dev` → localhost:3000 shows the placeholder h1 on a dark background.
-- Run `pnpm db:studio` → the three empty tables are visible.
+- Run `bun run lint && bun run typecheck && bun run format:check` — all clean.
+- Run `bun run dev` → localhost:3000 shows the placeholder h1 on a dark background.
+- Run `bun run db:studio` → the three empty tables are visible.
 
 ### 0.13 — Initial commit
 
@@ -157,11 +157,11 @@ pnpm dlx husky init
 
 ## Done when
 
-- `pnpm dev` shows a dark page with "anilist-match"
-- `pnpm db:studio` lists the three tables
+- `bun run dev` shows a dark page with "anilist-match"
+- `bun run db:studio` lists the three tables
 - `.env.local` exists and is gitignored
 - `src/components/ui/` has all the shadcn primitives
-- `pnpm lint`, `pnpm typecheck`, `pnpm format:check` are all clean
+- `bun run lint`, `bun run typecheck`, `bun run format:check` are all clean
 - Attempting a commit with a TypeScript error or ESLint violation is blocked by the pre-commit hook (verify by breaking something intentionally)
 
 ## Notes

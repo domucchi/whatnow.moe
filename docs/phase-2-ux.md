@@ -57,4 +57,4 @@
 - Random pick animates and highlights one card from the current visible set.
 - Unanimous toggle reduces results to only anime everyone wants.
 - Matching SQL variants have unit tests in `src/features/match/api/get-matches.test.ts`.
-- `pnpm lint && pnpm typecheck` still clean; no cross-feature-import violations introduced.
+- `bun run lint && bun run typecheck` still clean; no cross-feature-import violations introduced.

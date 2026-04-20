@@ -12,7 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // `citext` extension is enabled in `drizzle/0000_*.sql`. On a fresh DB use
-// `pnpm db:migrate` — `db:push` skips migration files and fails on this type.
+// `bun run db:migrate` — `db:push` skips migration files and fails on this type.
 const citext = customType<{ data: string; driverData: string }>({
   dataType: () => 'citext',
 });
