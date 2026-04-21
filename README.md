@@ -67,14 +67,6 @@ Follows [Bulletproof React](https://github.com/alan2207/bulletproof-react), adap
 
 More detail in [`AGENTS.md`](./AGENTS.md) and [`docs/overview.md`](./docs/overview.md).
 
-## Roadmap
-
-- **Phase 0**: Scaffold ([plan](./docs/phase-0-scaffold.md))
-- **Phase 1**: Lean MVP, N-user matching end-to-end ([plan](./docs/phase-1-mvp.md))
-- **Phase 2**: Design + UX features: filters, sort, random pick ([plan](./docs/phase-2-ux.md))
-- **Phase 3**: Polish & deploy ([plan](./docs/phase-3-polish.md))
-- **Future**: [MyAnimeList support](./docs/future-multi-provider.md)
-
 ## License
 
 [MIT](./LICENSE) © domucchi
