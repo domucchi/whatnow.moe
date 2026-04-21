@@ -139,6 +139,10 @@
   html {
     @apply font-sans;
   }
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
   ::selection {
     background: var(--accent-dim);
     color: var(--ink-0);
