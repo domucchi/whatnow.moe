@@ -187,16 +187,9 @@ ORDER BY match_count DESC,
 
 Results grouped in JS by `match_count` (via `src/features/match/utils/group-by-match-count.ts`) and rendered as sections ("All 3 want to watch · 12 anime", "2 of 3 · 47 anime", …).
 
-## Phases
-
-- **[Phase 0 — Scaffold](./phase-0-scaffold.md)** — Next.js project, deps, Neon, Drizzle, shadcn, bulletproof-react tooling (ESLint rules, Prettier, Husky, env validation), dark theme
-- **[Phase 1 — Lean MVP](./phase-1-mvp.md)** — N-user matching end-to-end with cache, shareable URLs, minimal UI
-- **[Phase 2 — Design + UX features](./phase-2-ux.md)** — implement the supplied design, then add sort / filters / random pick / unanimous mode
-- **[Phase 3 — Polish & deploy](./phase-3-polish.md)** — more tests, Playwright, OG images, a11y, Vercel deploy
-
 ## Future
 
-- **[MyAnimeList support](./future-multi-provider.md)** — not built in Phases 0–3, but the schema, URL format, and error shapes are designed so it's a mechanical addition later.
+- **[MyAnimeList support](./future-multi-provider.md)** — schema, URL format, and error shapes are designed so it's a mechanical addition later.
 
 ## Open decisions (non-blocking)
 
