@@ -111,7 +111,7 @@ Next.js specifics: `src/app/` is the Next router folder (pages / layouts / route
 ├── next.config.ts
 ├── tailwind.config.ts
 ├── tsconfig.json                         strict; "@/*" path alias
-└── .env.local                            DATABASE_URL, ANILIST_USER_AGENT
+└── .env.local                            DATABASE_URL, DATABASE_URL_PROD, ANILIST_USER_AGENT
 ```
 
 **Why only one feature?** Right now the whole app is one feature (`match`). The structure still pays off: `lib/` stays free of app-specific concerns, the Next router folder stays thin, and if we ever add a second feature (saved matches, user profiles, stats dashboard) it drops into `src/features/` without restructuring.
