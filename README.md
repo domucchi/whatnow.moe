@@ -32,7 +32,7 @@ Requirements: Node.js 20+, bun, a Neon Postgres database.
 ```bash
 bun install
 cp .env.example .env.local      # fill in DATABASE_URL and ANILIST_USER_AGENT
-bun db:push                 # apply the Drizzle schema
+bun db:migrate                  # apply committed migrations to the dev branch
 bun dev
 ```
 
@@ -40,19 +40,20 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script                            | Purpose                         |
-| --------------------------------- | ------------------------------- |
-| `bun dev`                         | Start the Next.js dev server    |
-| `bun build`                       | Production build                |
-| `bun start`                       | Run the production build        |
-| `bun lint`                        | ESLint                          |
-| `bun typecheck`                   | `tsc --noEmit`                  |
-| `bun format` / `bun format:check` | Prettier                        |
-| `bun test` / `bun test:watch`     | Bun test runner                 |
-| `bun db:generate`                 | Generate a Drizzle migration    |
-| `bun db:migrate`                  | Apply migrations                |
-| `bun db:push`                     | Push schema directly (dev only) |
-| `bun db:studio`                   | Open Drizzle Studio             |
+| Script                            | Purpose                                                                |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| `bun dev`                         | Start the Next.js dev server                                           |
+| `bun build`                       | Production build                                                       |
+| `bun start`                       | Run the production build                                               |
+| `bun lint`                        | ESLint                                                                 |
+| `bun typecheck`                   | `tsc --noEmit`                                                         |
+| `bun format` / `bun format:check` | Prettier                                                               |
+| `bun test` / `bun test:watch`     | Bun test runner                                                        |
+| `bun db:generate`                 | Generate a Drizzle migration from the schema, commit the SQL           |
+| `bun db:migrate`                  | Apply committed migrations to `DATABASE_URL` (dev branch)              |
+| `bun db:migrate:prod`             | Apply committed migrations to `DATABASE_URL_PROD` (prod branch)        |
+| `bun db:push`                     | Push schema directly — local prototyping only, not for shared branches |
+| `bun db:studio`                   | Open Drizzle Studio                                                    |
 
 ## Project conventions
 
