@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { Play, RefreshCw, Sparkles, X } from 'lucide-react';
+import Image from 'next/image';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -234,12 +235,7 @@ function Poster({ anime }: { anime: AnimeWithMatchInfo }) {
       className="relative w-full overflow-hidden rounded-[var(--radius)] bg-[var(--bg-2)]"
       style={{ aspectRatio: '2 / 3' }}
     >
-      {src && (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${src}')` }}
-        />
-      )}
+      {src && <Image src={src} alt="" fill sizes="140px" className="object-cover" />}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
     </div>
   );

@@ -12,6 +12,7 @@ type Props = {
   anime: AnimeWithMatchInfo;
   rank: number;
   totalUsers: number;
+  preloadCover?: boolean;
   // All usernames (in original order) so matched indices stay stable across
   // cards. Matched ones come from `anime.matchedUsers`.
   allUsernames: string[];
@@ -37,7 +38,7 @@ function matchedEntries(a: AnimeWithMatchInfo, allUsernames: string[]) {
     .filter((e) => e.colorIndex >= 0);
 }
 
-export function AnimeCard({ anime, rank, totalUsers, allUsernames }: Props) {
+export function AnimeCard({ anime, rank, totalUsers, preloadCover = false, allUsernames }: Props) {
   const title = titleFor(anime);
   const href = hrefFor(anime);
   const full = anime.matchCount === totalUsers;
@@ -51,7 +52,11 @@ export function AnimeCard({ anime, rank, totalUsers, allUsernames }: Props) {
       className="group animate-fadein focus-visible:ring-ring/50 flex flex-col rounded-[var(--radius)] outline-none focus-visible:ring-3"
     >
       <div className="relative">
-        <Poster anime={anime} />
+        <Poster
+          anime={anime}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          preload={preloadCover}
+        />
 
         <div className="font-mono-ui absolute top-2.5 left-2.5 rounded-[4px] bg-black/75 px-[7px] py-[3px] text-[11px] text-[var(--ink-1)] backdrop-blur supports-backdrop-filter:backdrop-blur-sm">
           #{rank}
@@ -132,15 +137,11 @@ export function AnimeRow({ anime, rank, totalUsers, allUsernames }: Props) {
         {String(rank).padStart(2, '0')}
       </div>
       <div
-        className="h-[75px] w-[50px] overflow-hidden rounded-[4px] bg-[var(--bg-2)] bg-cover bg-center"
-        style={{
-          backgroundImage:
-            (anime.coverMedium ?? anime.coverLarge)
-              ? `url('${anime.coverMedium ?? anime.coverLarge}')`
-              : undefined,
-        }}
+        className="relative h-[75px] w-[50px] overflow-hidden rounded-[4px] bg-[var(--bg-2)]"
         aria-hidden
-      />
+      >
+        <PosterImage anime={anime} sizes="50px" />
+      </div>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <div className="text-foreground truncate text-sm font-medium">{title}</div>
@@ -189,22 +190,22 @@ export function AnimeRow({ anime, rank, totalUsers, allUsernames }: Props) {
   );
 }
 
-function Poster({ anime }: { anime: AnimeWithMatchInfo }) {
-  const src = anime.coverLarge ?? anime.coverMedium;
+function Poster({
+  anime,
+  sizes,
+  preload = false,
+}: {
+  anime: AnimeWithMatchInfo;
+  sizes: string;
+  preload?: boolean;
+}) {
   return (
     <div
       className="relative w-full overflow-hidden rounded-[var(--radius)] bg-[var(--bg-2)]"
       style={{ aspectRatio: '2 / 3' }}
     >
-      {src ? (
-        <Image
-          src={src}
-          alt=""
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-          className="object-cover"
-        />
-      ) : (
+      <PosterImage anime={anime} sizes={sizes} preload={preload} />
+      {!anime.coverLarge && !anime.coverMedium && (
         <div className="font-display absolute inset-0 grid place-items-center p-3 text-center text-[28px] leading-[1.05] text-[var(--ink-2)]">
           {(anime.titleEnglish ?? anime.titleRomaji ?? '?').slice(0, 24)}
         </div>
@@ -212,4 +213,20 @@ function Poster({ anime }: { anime: AnimeWithMatchInfo }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
     </div>
   );
+}
+
+function PosterImage({
+  anime,
+  sizes,
+  preload = false,
+}: {
+  anime: AnimeWithMatchInfo;
+  sizes: string;
+  preload?: boolean;
+}) {
+  const src = anime.coverLarge ?? anime.coverMedium;
+
+  if (!src) return null;
+
+  return <Image src={src} alt="" fill sizes={sizes} preload={preload} className="object-cover" />;
 }
