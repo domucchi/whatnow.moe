@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import {
   parseAsArrayOf,
@@ -22,7 +22,6 @@ import {
 import { cn } from '@/lib/utils';
 import { FORMAT_VALUES, type FormatValue } from '@/features/match/validation/match-request';
 
-import { FilterPanel } from './filter-panel';
 import { FormatDropdown } from './format-dropdown';
 import { SortDropdown } from './sort-dropdown';
 import { ViewToggle } from './view-toggle';
@@ -31,6 +30,8 @@ type Props = {
   resultCount: number;
   genres: string[];
 };
+
+type FilterPanelComponent = ComponentType<{ genres: string[] }>;
 
 // Reads filter URL params so the "active filter" badge can show the count
 // without every subcomponent bubbling state up.
@@ -53,6 +54,26 @@ export function FilterBar({ resultCount, genres }: Props) {
 
   const [inlineOpen, setInlineOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [FilterPanel, setFilterPanel] = useState<FilterPanelComponent | null>(null);
+
+  const loadFilterPanel = async () => {
+    const mod = await import('./filter-panel');
+    setFilterPanel(() => mod.FilterPanel);
+  };
+
+  const toggleInline = async () => {
+    if (!inlineOpen && !FilterPanel) {
+      await loadFilterPanel();
+    }
+    setInlineOpen((v) => !v);
+  };
+
+  const setMobileSheetOpen = async (next: boolean) => {
+    if (next && !FilterPanel) {
+      await loadFilterPanel();
+    }
+    setSheetOpen(next);
+  };
 
   return (
     <div className="sticky top-0 z-10 border-b border-[var(--line-soft)] bg-[var(--bg-0)] px-6 py-3.5 lg:px-8">
@@ -75,7 +96,7 @@ export function FilterBar({ resultCount, genres }: Props) {
           {/* Desktop: inline expand. Mobile (`lg:hidden`): sheet. */}
           <button
             type="button"
-            onClick={() => setInlineOpen((v) => !v)}
+            onClick={toggleInline}
             aria-expanded={inlineOpen}
             className={cn(
               'focus-visible:ring-ring/50 hidden items-center gap-2 rounded-[10px] border border-[var(--line-soft)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors outline-none focus-visible:ring-3 lg:inline-flex',
@@ -87,7 +108,7 @@ export function FilterBar({ resultCount, genres }: Props) {
             {panelFilterCount > 0 && <FilterBadge count={panelFilterCount} />}
           </button>
 
-          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <Sheet open={sheetOpen} onOpenChange={setMobileSheetOpen}>
             <SheetTrigger
               render={
                 <button
@@ -105,9 +126,7 @@ export function FilterBar({ resultCount, genres }: Props) {
                 <SheetTitle>Filters</SheetTitle>
                 <SheetDescription>Narrow down your matches.</SheetDescription>
               </SheetHeader>
-              <div className="px-4 pb-6">
-                <FilterPanel genres={genres} />
-              </div>
+              <div className="px-4 pb-6">{FilterPanel && <FilterPanel genres={genres} />}</div>
             </SheetContent>
           </Sheet>
 
@@ -117,7 +136,7 @@ export function FilterBar({ resultCount, genres }: Props) {
 
       {inlineOpen && (
         <div className="animate-fadein mt-3.5 hidden rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-1)] p-4 lg:block">
-          <FilterPanel genres={genres} />
+          {FilterPanel && <FilterPanel genres={genres} />}
         </div>
       )}
     </div>

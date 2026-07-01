@@ -41,6 +41,8 @@ type Props = {
   error: string | null;
 };
 
+const GRID_PRELOAD_COUNT = 6;
+
 // Central hub for filter / sort / mode / view URL state. One `useQueryStates`
 // call keeps every hook in sync and avoids re-render storms when multiple
 // params change together. Writes are shallow (nuqs default) so toggling a
@@ -146,6 +148,7 @@ export function AppShell({
                       anime={anime}
                       rank={i + 1}
                       totalUsers={allUsernames.length}
+                      preloadCover={i < GRID_PRELOAD_COUNT}
                       allUsernames={allUsernames}
                     />
                   ))}
