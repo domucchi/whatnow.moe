@@ -103,6 +103,7 @@ export function FilterPanel({ genres }: Props) {
           min={SCORE_MIN}
           max={SCORE_MAX}
           step={5}
+          getAriaLabel={(index) => (index === 0 ? 'Minimum score' : 'Maximum score')}
           onValueChange={(vals) => {
             const arr = vals as [number, number];
             void setScoreMin(arr[0] === SCORE_MIN ? null : arr[0]);
@@ -123,6 +124,7 @@ export function FilterPanel({ genres }: Props) {
           min={YEAR_MIN}
           max={YEAR_MAX}
           step={1}
+          getAriaLabel={(index) => (index === 0 ? 'Minimum year' : 'Maximum year')}
           onValueChange={(vals) => {
             const arr = vals as [number, number];
             void setYearMin(arr[0] === YEAR_MIN ? null : arr[0]);
@@ -139,6 +141,7 @@ export function FilterPanel({ genres }: Props) {
           </div>
         </div>
         <Switch
+          aria-label="Include currently airing"
           checked={includeAiring}
           onCheckedChange={(v) => void setIncludeAiring(v ? true : null)}
         />
@@ -160,11 +163,12 @@ export function FilterPanel({ genres }: Props) {
                 type="button"
                 onClick={() => toggleGenre(g)}
                 className={cn(
-                  'rounded-full border px-2.5 py-[5px] text-xs transition-colors',
+                  'focus-visible:ring-ring/50 rounded-full border px-2.5 py-[5px] text-xs transition-colors outline-none focus-visible:ring-3',
                   active
                     ? 'border-[var(--ink-0)] bg-[var(--ink-0)] text-[#1a1512]'
                     : 'hover:text-foreground border-[var(--line-soft)] bg-[var(--bg-2)] text-[var(--ink-2)]',
                 )}
+                aria-pressed={active}
               >
                 {g}
               </button>
@@ -174,7 +178,7 @@ export function FilterPanel({ genres }: Props) {
             <button
               type="button"
               onClick={resetAll}
-              className="border-primary/30 inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-[5px] text-xs text-[var(--accent-soft)]"
+              className="border-primary/30 focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-[5px] text-xs text-[var(--accent-soft)] outline-none focus-visible:ring-3"
             >
               <RefreshCw className="size-3" />
               Clear

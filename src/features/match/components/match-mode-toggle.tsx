@@ -76,8 +76,9 @@ function ModeButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        'rounded-[7px] border px-2 py-2 text-[12.5px] font-medium transition-colors',
+        'focus-visible:ring-ring/50 rounded-[7px] border px-2 py-2 text-[12.5px] font-medium transition-colors outline-none focus-visible:ring-3',
         active
           ? 'text-foreground border-[var(--line)] bg-[var(--bg-0)]'
           : 'hover:text-foreground border-transparent text-[var(--ink-2)]',

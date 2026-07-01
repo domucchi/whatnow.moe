@@ -112,9 +112,13 @@ export function AppShell({
         {!started ? (
           <MatchEmptyState />
         ) : error ? (
-          <MatchResultsError errorName={error} />
+          <>
+            <h1 className="sr-only">Anime matches</h1>
+            <MatchResultsError errorName={error} />
+          </>
         ) : (
           <>
+            <h1 className="sr-only">Anime matches</h1>
             <FilterBar resultCount={filtered.length} genres={genres} />
             <div className="flex-1 overflow-y-auto">
               {filtered.length === 0 ? (

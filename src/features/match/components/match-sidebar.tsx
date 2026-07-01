@@ -90,7 +90,7 @@ export function MatchSidebar({ initialUsernames, started, matches, stats }: Prop
                 <button
                   type="button"
                   onClick={addRow}
-                  className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium text-[var(--accent-soft)]"
+                  className="focus-visible:ring-ring/50 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium text-[var(--accent-soft)] outline-none focus-visible:ring-3"
                 >
                   <Plus className="size-3" /> Add
                 </button>

@@ -48,7 +48,7 @@ export function AnimeCard({ anime, rank, totalUsers, allUsernames }: Props) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group animate-fadein flex flex-col outline-none"
+      className="group animate-fadein focus-visible:ring-ring/50 flex flex-col rounded-[var(--radius)] outline-none focus-visible:ring-3"
     >
       <div className="relative">
         <Poster anime={anime} />
@@ -126,7 +126,7 @@ export function AnimeRow({ anime, rank, totalUsers, allUsernames }: Props) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="animate-fadein grid cursor-pointer grid-cols-[34px_50px_1fr_auto_auto_auto] items-center gap-4 rounded-md px-4 py-2.5 transition-colors hover:bg-[var(--bg-1)]"
+      className="animate-fadein focus-visible:ring-ring/50 grid cursor-pointer grid-cols-[34px_50px_1fr_auto_auto_auto] items-center gap-4 rounded-md px-4 py-2.5 transition-colors outline-none hover:bg-[var(--bg-1)] focus-visible:ring-3"
     >
       <div className="font-mono-ui text-xs text-[var(--ink-3)] tabular-nums">
         {String(rank).padStart(2, '0')}

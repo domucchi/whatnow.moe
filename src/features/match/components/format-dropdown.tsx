@@ -46,7 +46,7 @@ export function FormatDropdown() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="hover:text-foreground inline-flex items-center gap-2 rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors outline-none aria-expanded:bg-[var(--bg-3)]">
+      <DropdownMenuTrigger className="hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-2 rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors outline-none focus-visible:ring-3 aria-expanded:bg-[var(--bg-3)]">
         <Tv className="size-3.5" />
         <span>{label}</span>
         <ChevronDown className="size-3.5 text-[var(--ink-3)]" />

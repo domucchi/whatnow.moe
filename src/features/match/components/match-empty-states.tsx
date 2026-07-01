@@ -10,9 +10,9 @@ export function MatchEmptyState() {
         <Users className="size-7" />
       </div>
       <div className="flex flex-col gap-1">
-        <div className="font-display text-foreground text-[30px] font-extrabold tracking-[-0.03em]">
+        <h1 className="font-display text-foreground text-[30px] font-extrabold tracking-[-0.03em]">
           What&rsquo;ll we watch tonight?
-        </div>
+        </h1>
         <div className="font-display text-[13px] font-medium tracking-[0.2em] text-[var(--accent-soft)]">
           こんばんは
         </div>

@@ -112,11 +112,15 @@ export function RandomPickDialog({ open, onOpenChange, candidates, usernames }: 
           <div className="text-[11px] tracking-[0.18em] text-[var(--ink-3)] uppercase">
             {phase === 'spinning' ? 'Rolling…' : 'Your pick'}
           </div>
-          <div
-            className="font-display text-[32px] leading-[1.15] font-extrabold tracking-[-0.025em]"
-            aria-live="polite"
-          >
+          <div className="font-display text-[32px] leading-[1.15] font-extrabold tracking-[-0.025em]">
             {phase === 'spinning' ? 'One of these…' : 'Tonight you\u2019re watching'}
+          </div>
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {phase === 'landed'
+              ? `Random pick: ${title}`
+              : phase === 'spinning'
+                ? 'Random pick rolling'
+                : ''}
           </div>
 
           <div className="mt-5 flex items-stretch gap-5">
