@@ -87,9 +87,9 @@ export function FilterBar({ resultCount, genres }: Props) {
           </div>
         </div>
 
-        <div className="flex-1" />
+        <div className="hidden flex-1 lg:block" />
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:flex-nowrap">
           <SortDropdown />
           <FormatDropdown />
 

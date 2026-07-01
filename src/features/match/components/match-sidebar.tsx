@@ -6,6 +6,7 @@ import { Plus, RefreshCw, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Progress, ProgressIndicator, ProgressTrack } from '@/components/ui/progress';
 import { submitMatch, type SubmitMatchState } from '@/features/match/api/submit-match';
 import type { AnimeWithMatchInfo, MatchStats } from '@/features/match/types';
 import { cn } from '@/lib/utils';
@@ -285,16 +286,16 @@ function PerUserBar({
         >
           {username}
         </div>
-        <div className="h-[3px] flex-1 overflow-hidden rounded-[2px] bg-[var(--bg-2)]">
-          <div
-            className="h-full"
-            style={{
-              width: `${pct}%`,
-              background: `var(${USER_COLOR_VARS[colorIndex % USER_COLOR_VARS.length]})`,
-              opacity: 0.85,
-            }}
-          />
-        </div>
+        <Progress value={pct} className="block h-[3px] flex-1" aria-label={`${username} overlap`}>
+          <ProgressTrack className="h-full rounded-[2px] bg-[var(--bg-2)]">
+            <ProgressIndicator
+              style={{
+                background: `var(${USER_COLOR_VARS[colorIndex % USER_COLOR_VARS.length]})`,
+                opacity: 0.85,
+              }}
+            />
+          </ProgressTrack>
+        </Progress>
         <div className="w-7 text-right text-[11px] text-[var(--ink-3)] tabular-nums">{count}</div>
       </div>
     </div>

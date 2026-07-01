@@ -23,6 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://whatnow.moe'),
   title: {
     default: 'whatnow.moe — find anime you all want to watch',
     template: '%s · whatnow.moe',

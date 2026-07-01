@@ -31,6 +31,13 @@ test('matches two AniList planning lists with mocked AniList data', async ({ pag
   await expect(page.getByRole('link', { name: /Frieren: Beyond Journey/ })).toBeVisible();
   await expect(page.getByText('2/2')).toHaveCount(2);
 
+  await page.getByRole('button', { name: 'List view' }).click();
+  await expect(page).toHaveURL('/?u=e2e_alice&u=e2e_bob&view=list');
+  await expect(page.getByRole('link', { name: /Cowboy Bebop/ })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Grid view' }).click();
+  await expect(page).toHaveURL('/?u=e2e_alice&u=e2e_bob');
+
   await page.getByLabel('AniList username 2').fill('e2e_charlie');
   await expect(page.getByRole('button', { name: 'Match now' })).toBeVisible();
   await expect(page).toHaveURL('/?u=e2e_alice&u=e2e_bob');
@@ -39,5 +46,19 @@ test('matches two AniList planning lists with mocked AniList data', async ({ pag
   await page.getByRole('button', { name: 'Random pick' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText(/Random pick:|Random pick rolling/)).toBeAttached();
-  await expect(page.getByRole('link', { name: 'Lock it in' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Lock it in' })).toBeDisabled();
+  await expect(page.getByRole('link', { name: 'Lock it in' })).toBeVisible({ timeout: 15_000 });
+});
+
+test('filters three-user matches by strict match mode', async ({ page }) => {
+  await page.goto('/?u=e2e_alice&u=e2e_bob&u=e2e_charlie');
+
+  await expect(page.getByRole('button', { name: 'Random pick' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Cowboy Bebop/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Frieren: Beyond Journey/ })).toBeVisible();
+
+  await page.getByRole('button', { name: /All 3/ }).click();
+  await expect(page).toHaveURL('/?u=e2e_alice&u=e2e_bob&u=e2e_charlie&mode=all');
+  await expect(page.getByRole('link', { name: /Cowboy Bebop/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Frieren: Beyond Journey/ })).toHaveCount(0);
 });

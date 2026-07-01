@@ -28,10 +28,11 @@ This means **we add `mal_id` to the `anime` table from day 1**, populated from A
 1. **Users table gets a `provider` column** (`anilist` | `mal`), default `'anilist'`. Unique constraint becomes `(provider, username)` instead of `username`. Rename the table from `anilist_users` to just `users`. One-time annoyance now; a real migration later if skipped.
 2. **`anime.mal_id` column** (nullable, indexed) — populated from AniList's `idMal` on every list fetch.
 3. **Error classes take a `provider` argument** — `UserNotFoundError(provider, username)`. Phase 1 always passes `"anilist"`, but the shape is ready.
-4. **URL schema allows an optional `provider:` prefix on each `u` query param**:
+4. **URL schema reserves an optional `provider:` prefix on each `u` query param**:
    - `/?u=alice&u=bob` → both anilist (default, current state).
-   - `/?u=anilist:alice&u=mal:bob` → mixed providers (future).
-   - Parser rule: for each `u` value, split on first `:`; if left side is a known provider, use it, else treat the whole value as an anilist username.
+   - `/?u=anilist:alice&u=mal:bob` → mixed providers once MAL is implemented.
+   - Current runtime keeps only supported providers so `mal:` never routes through the AniList fetch path.
+   - Future parser rule: for each `u` value, split on first `:`; if left side is a known provider, use it, else treat the whole value as an anilist username.
    - **Guarantees:** every Phase 1 URL stays valid after MAL lands. No broken shares.
 5. **Matching SQL already joins through `user_planning_entries` on user id**, not username — so no SQL change needed when users gain providers.
 

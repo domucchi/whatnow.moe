@@ -90,10 +90,9 @@ describe('parseUsernamesFromSearchParams', () => {
     ]);
   });
 
-  it('delegates provider parsing to parseUsernameSegment', () => {
+  it('keeps only currently supported providers', () => {
     expect(parseUsernamesFromSearchParams({ u: ['anilist:alice', 'mal:bob'] })).toEqual([
       { provider: 'anilist', username: 'alice' },
-      { provider: 'mal', username: 'bob' },
     ]);
   });
 
@@ -108,6 +107,18 @@ describe('parseUsernamesFromSearchParams', () => {
     expect(parseUsernamesFromSearchParams({ u: 'alice', sort: 'score' })).toEqual([
       { provider: 'anilist', username: 'alice' },
     ]);
+  });
+
+  it('drops invalid usernames from direct URL params', () => {
+    expect(parseUsernamesFromSearchParams({ u: ['alice', 'bob!', 'foo:bar', 'carl'] })).toEqual([
+      { provider: 'anilist', username: 'alice' },
+      { provider: 'anilist', username: 'carl' },
+    ]);
+  });
+
+  it('dedupes and caps direct URL params at 10 users', () => {
+    const users = Array.from({ length: 12 }, (_, i) => `user${i}`);
+    expect(parseUsernamesFromSearchParams({ u: ['USER0', 'user0', ...users] })).toHaveLength(10);
   });
 });
 

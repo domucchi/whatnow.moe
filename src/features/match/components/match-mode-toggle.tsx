@@ -3,6 +3,7 @@
 import { parseAsStringEnum, useQueryState } from 'nuqs';
 import { Check, Users } from 'lucide-react';
 
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { MODE_VALUES, type ModeValue } from '@/features/match/validation/match-request';
 
@@ -39,49 +40,51 @@ export function MatchModeToggle({ userCount, urlSync = true }: Props) {
       <div className="mb-2 text-[11px] tracking-[0.14em] text-[var(--ink-3)] uppercase">
         Match Mode
       </div>
-      <div className="grid grid-cols-2 gap-1 rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] p-1">
+      <ToggleGroup
+        aria-label="Match mode"
+        value={[mode]}
+        onValueChange={(next) => {
+          const selected = next[0] as ModeValue | undefined;
+          if (selected) handle(selected);
+        }}
+        spacing={1}
+        className="grid w-full grid-cols-2 rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] p-1"
+      >
         <ModeButton
-          active={mode === 'all'}
-          onClick={() => handle('all')}
+          value="all"
           icon={<Check className="size-3" />}
           label={`All ${userCount}`}
           sub="strict match"
         />
         <ModeButton
-          active={mode !== 'all'}
-          onClick={() => handle('any')}
+          value="any"
           icon={<Users className="size-3" />}
           label="Any 2+"
           sub="loose match"
         />
-      </div>
+      </ToggleGroup>
     </div>
   );
 }
 
 function ModeButton({
-  active,
-  onClick,
+  value,
   icon,
   label,
   sub,
 }: {
-  active: boolean;
-  onClick: () => void;
+  value: ModeValue;
   icon: React.ReactNode;
   label: string;
   sub: string;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
+    <ToggleGroupItem
+      value={value}
       className={cn(
-        'focus-visible:ring-ring/50 rounded-[7px] border px-2 py-2 text-[12.5px] font-medium transition-colors outline-none focus-visible:ring-3',
-        active
-          ? 'text-foreground border-[var(--line)] bg-[var(--bg-0)]'
-          : 'hover:text-foreground border-transparent text-[var(--ink-2)]',
+        'min-h-0 w-full rounded-[7px] border px-2 py-2 text-[12.5px] font-medium transition-colors',
+        'hover:text-foreground border-transparent bg-transparent text-[var(--ink-2)]',
+        'data-pressed:text-foreground data-pressed:border-[var(--line)] data-pressed:bg-[var(--bg-0)]',
       )}
     >
       <div className="flex items-center justify-center gap-1.5">
@@ -89,6 +92,6 @@ function ModeButton({
         <span>{label}</span>
       </div>
       <div className="mt-0.5 text-[10.5px] font-normal text-[var(--ink-3)]">{sub}</div>
-    </button>
+    </ToggleGroupItem>
   );
 }

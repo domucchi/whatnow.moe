@@ -23,13 +23,7 @@ export type MatchRow = {
 };
 
 export type SortKey =
-  | 'matches'
-  | 'score'
-  | 'popularity'
-  | 'year-desc'
-  | 'year-asc'
-  | 'title'
-  | 'episodes';
+  'matches' | 'score' | 'popularity' | 'year-desc' | 'year-asc' | 'title' | 'episodes';
 
 export type MatchMode = 'any' | 'all';
 
