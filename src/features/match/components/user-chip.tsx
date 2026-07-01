@@ -42,7 +42,7 @@ export function UserChip({
   return (
     <div
       className={cn(
-        'flex items-center gap-2.5 rounded-[10px] border bg-[var(--bg-2)] py-2 pr-2.5 pl-2 transition-colors',
+        'focus-within:ring-ring/50 flex items-center gap-2.5 rounded-[10px] border bg-[var(--bg-2)] py-2 pr-2.5 pl-2 transition-colors focus-within:ring-3',
         invalid ? 'border-primary/40' : 'border-[var(--line-soft)]',
       )}
     >
@@ -51,6 +51,8 @@ export function UserChip({
         ref={inputRef}
         id={`username-${index}`}
         name={`username-${index}`}
+        aria-label={`AniList username ${index + 1}`}
+        aria-invalid={invalid || undefined}
         value={value}
         onChange={(e) => onValueChange(e.target.value)}
         placeholder="AniList username"
@@ -76,7 +78,7 @@ export function UserChip({
           type="button"
           onClick={onRemove}
           aria-label={`Remove user ${index + 1}`}
-          className="hover:text-foreground grid place-items-center rounded-md p-1 text-[var(--ink-3)] transition-colors"
+          className="hover:text-foreground focus-visible:ring-ring/50 grid place-items-center rounded-md p-1 text-[var(--ink-3)] transition-colors outline-none focus-visible:ring-3"
         >
           <X className="size-3.5" />
         </button>

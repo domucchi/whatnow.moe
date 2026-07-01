@@ -57,7 +57,7 @@ export function FilterBar({ resultCount, genres }: Props) {
   return (
     <div className="sticky top-0 z-10 border-b border-[var(--line-soft)] bg-[var(--bg-0)] px-6 py-3.5 lg:px-8">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2" aria-live="polite">
           <div className="font-display text-[30px] leading-none font-extrabold tracking-[-0.03em] tabular-nums">
             {resultCount}
           </div>
@@ -78,7 +78,7 @@ export function FilterBar({ resultCount, genres }: Props) {
             onClick={() => setInlineOpen((v) => !v)}
             aria-expanded={inlineOpen}
             className={cn(
-              'hidden items-center gap-2 rounded-[10px] border border-[var(--line-soft)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors lg:inline-flex',
+              'focus-visible:ring-ring/50 hidden items-center gap-2 rounded-[10px] border border-[var(--line-soft)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors outline-none focus-visible:ring-3 lg:inline-flex',
               inlineOpen ? 'bg-[var(--bg-3)]' : 'hover:text-foreground bg-[var(--bg-2)]',
             )}
           >
@@ -92,7 +92,7 @@ export function FilterBar({ resultCount, genres }: Props) {
               render={
                 <button
                   type="button"
-                  className="hover:text-foreground inline-flex items-center gap-2 rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors lg:hidden"
+                  className="hover:text-foreground focus-visible:ring-ring/50 inline-flex items-center gap-2 rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] px-3 py-2 text-[13px] text-[var(--ink-1)] transition-colors outline-none focus-visible:ring-3 lg:hidden"
                 />
               }
             >
