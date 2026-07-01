@@ -70,6 +70,7 @@ export type MatchRequestOutput = z.output<typeof MatchRequestSchema>;
 export type MatchFilters = Omit<MatchRequestOutput, 'usernames'>;
 
 const KNOWN_PROVIDERS: readonly ListProvider[] = ['anilist', 'mal'];
+const SUPPORTED_PROVIDERS: readonly ListProvider[] = ['anilist'];
 
 export function parseUsernameSegment(segment: string): UserIdentifier {
   const colon = segment.indexOf(':');
@@ -93,10 +94,26 @@ export function parseUsernamesFromSearchParams(
 ): UserIdentifier[] {
   const raw = searchParams['u'];
   const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
-  return values
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0)
-    .map(parseUsernameSegment);
+  const users: UserIdentifier[] = [];
+  const seen = new Set<string>();
+
+  for (const value of values) {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) continue;
+
+    const user = parseUsernameSegment(trimmed);
+    if (!SUPPORTED_PROVIDERS.includes(user.provider)) continue;
+    if (!UsernameSchema.safeParse(user.username).success) continue;
+
+    const key = `${user.provider}:${user.username}`;
+    if (seen.has(key)) continue;
+
+    users.push(user);
+    seen.add(key);
+    if (users.length >= 10) break;
+  }
+
+  return users;
 }
 
 function asArray(raw: string | string[] | undefined): string[] {

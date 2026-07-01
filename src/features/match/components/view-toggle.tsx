@@ -3,6 +3,7 @@
 import { parseAsStringEnum, useQueryState } from 'nuqs';
 import { LayoutGrid, List } from 'lucide-react';
 
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { VIEW_VALUES, type ViewValue } from '@/features/match/validation/match-request';
 
@@ -22,42 +23,46 @@ export function ViewToggle() {
   };
 
   return (
-    <div className="flex rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] p-[3px]">
-      <ViewButton label="Grid view" active={view === 'grid'} onClick={() => set('grid')}>
+    <ToggleGroup
+      aria-label="Results view"
+      value={[view]}
+      onValueChange={(next) => {
+        const selected = next[0] as ViewValue | undefined;
+        if (selected) set(selected);
+      }}
+      spacing={0}
+      className="flex rounded-[10px] border border-[var(--line-soft)] bg-[var(--bg-2)] p-[3px]"
+    >
+      <ViewButton label="Grid view" value="grid">
         <LayoutGrid className="size-3.5" />
       </ViewButton>
-      <ViewButton label="List view" active={view === 'list'} onClick={() => set('list')}>
+      <ViewButton label="List view" value="list">
         <List className="size-3.5" />
       </ViewButton>
-    </div>
+    </ToggleGroup>
   );
 }
 
 function ViewButton({
   label,
-  active,
-  onClick,
+  value,
   children,
 }: {
   label: string;
-  active: boolean;
-  onClick: () => void;
+  value: ViewValue;
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <ToggleGroupItem
+      value={value}
       aria-label={label}
-      aria-pressed={active}
-      onClick={onClick}
       className={cn(
-        'grid place-items-center rounded-[7px] border px-2 py-1.5 transition-colors',
-        active
-          ? 'text-foreground border-[var(--line)] bg-[var(--bg-0)]'
-          : 'hover:text-foreground border-transparent text-[var(--ink-3)]',
+        'grid min-h-0 min-w-0 place-items-center rounded-[7px] border px-2 py-1.5 transition-colors',
+        'hover:text-foreground border-transparent bg-transparent text-[var(--ink-3)]',
+        'data-pressed:text-foreground data-pressed:border-[var(--line)] data-pressed:bg-[var(--bg-0)]',
       )}
     >
       {children}
-    </button>
+    </ToggleGroupItem>
   );
 }

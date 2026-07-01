@@ -29,14 +29,14 @@ Next.js specifics: `src/app/` is the Next router folder (pages / layouts / route
 
 ## Tech stack
 
-- **Framework:** Next.js 17 App Router, RSC-first, Server Actions for form submit
+- **Framework:** Next.js 16 App Router, RSC-first, Server Actions for form submit
 - **Language:** TypeScript (strict)
 - **Styling:** Tailwind v4 + shadcn/ui primitives. Dark theme only (no toggle)
 - **Database:** Neon Postgres + Drizzle ORM (branch-per-preview on Vercel)
 - **AniList client:** plain typed `fetch` + Zod response validation
 - **Form validation:** Zod shared between client (inline errors) and Server Action
 - **URL state:** nuqs for filter/sort query params (Phase 2)
-- **Testing:** Vitest unit tests + one Playwright smoke with MSW
+- **Testing:** Bun unit tests + one Playwright smoke with MSW
 - **Code quality:** ESLint (with bulletproof-react import rules), Prettier, Husky + lint-staged, `eslint-plugin-check-file`
 - **Deployment:** Vercel + Neon
 

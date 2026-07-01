@@ -131,7 +131,7 @@ export function AnimeRow({ anime, rank, totalUsers, allUsernames }: Props) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="animate-fadein focus-visible:ring-ring/50 grid cursor-pointer grid-cols-[34px_50px_1fr_auto_auto_auto] items-center gap-4 rounded-md px-4 py-2.5 transition-colors outline-none hover:bg-[var(--bg-1)] focus-visible:ring-3"
+      className="animate-fadein focus-visible:ring-ring/50 grid cursor-pointer grid-cols-[34px_50px_minmax(0,1fr)] items-center gap-4 rounded-md px-4 py-2.5 transition-colors outline-none hover:bg-[var(--bg-1)] focus-visible:ring-3 sm:grid-cols-[34px_50px_minmax(0,1fr)_auto_auto_auto]"
     >
       <div className="font-mono-ui text-xs text-[var(--ink-3)] tabular-nums">
         {String(rank).padStart(2, '0')}
@@ -157,11 +157,11 @@ export function AnimeRow({ anime, rank, totalUsers, allUsernames }: Props) {
           </div>
         )}
       </div>
-      <div className="flex items-center gap-2.5">
+      <div className="hidden items-center gap-2.5 sm:flex">
         <AvatarStack entries={entries} size={22} />
         <MatchRatioPill matched={anime.matchCount} total={totalUsers} />
       </div>
-      <div className="flex items-center gap-3 text-xs text-[var(--ink-2)]">
+      <div className="hidden items-center gap-3 text-xs text-[var(--ink-2)] md:flex">
         {anime.seasonYear !== null && <span className="tabular-nums">{anime.seasonYear}</span>}
         {formatLabel(anime) && (
           <>
@@ -170,7 +170,7 @@ export function AnimeRow({ anime, rank, totalUsers, allUsernames }: Props) {
           </>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="hidden items-center gap-2 sm:flex">
         {anime.averageScore !== null && (
           <>
             <ScoreBar value={anime.averageScore} accent={anime.averageScore >= 85} />
