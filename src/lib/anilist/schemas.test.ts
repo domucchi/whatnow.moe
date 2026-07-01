@@ -2,11 +2,17 @@ import { describe, expect, it } from 'bun:test';
 
 import {
   emptyPlanningResponse,
+  fixtures,
   twoEntryPlanningResponse,
   userNotFoundResponse,
 } from '@/testing/fixtures/anilist-responses';
 
-import { PlanningListResponseSchema, AnilistMediaSchema } from './schemas';
+import {
+  AnilistErrorResponseSchema,
+  AnilistMediaSchema,
+  GenreCollectionResponseSchema,
+  PlanningListResponseSchema,
+} from './schemas';
 
 describe('PlanningListResponseSchema', () => {
   it('accepts a response with entries', () => {
@@ -26,6 +32,18 @@ describe('PlanningListResponseSchema', () => {
 
   it('rejects a malformed payload', () => {
     const result = PlanningListResponseSchema.safeParse({ data: null });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects entries without media', () => {
+    const result = PlanningListResponseSchema.safeParse({
+      data: {
+        MediaListCollection: {
+          lists: [{ entries: [{}] }],
+        },
+      },
+    });
+
     expect(result.success).toBe(false);
   });
 });
@@ -53,5 +71,41 @@ describe('AnilistMediaSchema', () => {
   it('rejects a missing required field', () => {
     const result = AnilistMediaSchema.safeParse({ id: 1 });
     expect(result.success).toBe(false);
+  });
+
+  it('rejects partial media without coverImage', () => {
+    const { coverImage, ...media } = fixtures.cowboyBebop;
+    const result = AnilistMediaSchema.safeParse(media);
+
+    expect(coverImage).toBeDefined();
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('GenreCollectionResponseSchema', () => {
+  it('accepts a genre list', () => {
+    const parsed = GenreCollectionResponseSchema.parse({
+      data: { GenreCollection: ['Action', 'Drama'] },
+    });
+
+    expect(parsed.data.GenreCollection).toEqual(['Action', 'Drama']);
+  });
+
+  it('accepts a null genre list', () => {
+    const parsed = GenreCollectionResponseSchema.parse({
+      data: { GenreCollection: null },
+    });
+
+    expect(parsed.data.GenreCollection).toBeNull();
+  });
+});
+
+describe('AnilistErrorResponseSchema', () => {
+  it('accepts errors with optional HTTP status', () => {
+    const parsed = AnilistErrorResponseSchema.parse({
+      errors: [{ message: 'Not found', status: 404 }, { message: 'Temporarily unavailable' }],
+    });
+
+    expect(parsed.errors).toHaveLength(2);
   });
 });

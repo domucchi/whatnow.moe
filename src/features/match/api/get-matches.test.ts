@@ -135,6 +135,26 @@ describe('getMatches (orchestrator)', () => {
     expect(result.matches.map((m) => m.id)).toEqual([1, 2, 3]);
   });
 
+  it('returns empty DB results with non-empty stats', async () => {
+    mocks.getMatchesFromDb.mockResolvedValue([]);
+    mocks.getMatchStats.mockResolvedValue({
+      scanned: 12,
+      perUser: { alice: 8, bob: 4 },
+    });
+
+    const result = await getMatches({
+      users: [
+        { provider: 'anilist', username: 'alice' },
+        { provider: 'anilist', username: 'bob' },
+      ],
+    });
+
+    expect(result).toEqual({
+      matches: [],
+      stats: { scanned: 12, perUser: { alice: 8, bob: 4 } },
+    });
+  });
+
   it('propagates errors from the cache layer', async () => {
     mocks.ensureUserListCached.mockRejectedValueOnce(new Error('boom'));
 

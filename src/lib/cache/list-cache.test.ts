@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, jest, mock, type Mock } from 'bun:tes
 
 import { UserNotFoundError } from '@/lib/anilist/errors';
 import {
+  emptyPlanningResponse,
+  fixtures,
   twoEntryPlanningResponse,
   userNotFoundResponse,
 } from '@/testing/fixtures/anilist-responses';
@@ -90,6 +92,36 @@ describe('ensureUserListCached', () => {
     await ensureUserListCached('anilist', 'bob');
 
     expect(mocks.fetchPlanningList).toHaveBeenCalledWith('bob');
+    expect(mocks.replaceUserPlanningEntries).toHaveBeenCalledWith(42, [1, 154587]);
+  });
+
+  it('refreshes an empty planning list and clears cached entries', async () => {
+    mocks.getUserMeta.mockResolvedValue(null);
+    mocks.fetchPlanningList.mockResolvedValue(emptyPlanningResponse);
+
+    await ensureUserListCached('anilist', 'empty');
+
+    expect(mocks.upsertUser).toHaveBeenCalledWith('anilist', 'empty');
+    expect(mocks.replaceUserPlanningEntries).toHaveBeenCalledWith(42, []);
+  });
+
+  it('dedupes duplicate anime across lists before replacing planning entries', async () => {
+    mocks.getUserMeta.mockResolvedValue(null);
+    mocks.fetchPlanningList.mockResolvedValue({
+      data: {
+        MediaListCollection: {
+          lists: [
+            { entries: [{ media: fixtures.cowboyBebop }, { media: fixtures.frieren }] },
+            { entries: [{ media: fixtures.cowboyBebop }] },
+          ],
+        },
+      },
+    });
+
+    await ensureUserListCached('anilist', 'duplicate');
+
+    const animeArg = mocks.upsertAnimeBatch.mock.calls[0]?.[0] ?? [];
+    expect(animeArg.map((a) => a.id)).toEqual([1, 154587]);
     expect(mocks.replaceUserPlanningEntries).toHaveBeenCalledWith(42, [1, 154587]);
   });
 
